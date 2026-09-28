@@ -2,7 +2,7 @@
 //
 // 背景：dsh v0.1.5-alpha.1 把 client-connection 的 inject 从 ['webServer','credentials']
 // 收缩为 ['credentials']，rpc.handle 内部访问 owner.webServer 必抛
-// "cannot get property \"webServer\" without inject"。dsh-pocket 改为直接挂到
+// "cannot get property \"webServer\" without inject"。dsh-pocket-frog 改为直接挂到
 // 自己 inject 的 webServer 上，绕开该访问路径。
 //
 // 本测试用最小 fake webServer + fake connection.requestRejection，验证：
@@ -78,7 +78,7 @@ function postJson(port, path, body, { host = '127.0.0.1', origin, contentType = 
   });
 }
 
-/** 装配一个跑在 fake webServer 上的 dsh-pocket RPC，返回 { port, stop, ctx, installDispose }。 */
+/** 装配一个跑在 fake webServer 上的 dsh-pocket-frog RPC，返回 { port, stop, ctx, installDispose }。 */
 async function setup({ requestRejection, opts = {}, connection } = {}) {
   const webServer = fakeWebServer();
   // 故意把 rpc.handle 设成抛错：若走回退路径就直接失败，证明走的是直接 mount 路径。

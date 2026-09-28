@@ -1,6 +1,6 @@
 // issue #96：dsh 0.1.1-rc.2 起，宿主注入的 @deepseek-ai/dsh-client-connection 会调
 //   const api = fixtureClient ?? transport?.createApiClient() ?? new WebApiClient()
-// transport = globalThis.__DSH_TRANSPORT__。经 dsh-pocket 代理（手机 / 局域网 / 隧道）
+// transport = globalThis.__DSH_TRANSPORT__。经 dsh-pocket-frog 代理（手机 / 局域网 / 隧道）
 // 访问时宿主给的 transport 不带 createApiClient → TypeError 整页崩。
 // 本测试验证代理注入的兜底脚本 TRANSPORT_API_CLIENT_SHIM：
 //   - 方法缺失时补一个返回 null 的实现（触发宿主 ?? new WebApiClient() 兜底）
@@ -30,9 +30,9 @@ function freshContext() {
 }
 
 test('shim：注入内容带判重标记，且已进入默认注入集合', () => {
-  assert.ok(TRANSPORT_API_CLIENT_SHIM.includes('data-dsh-pocket-transport-shim="1"'), '带注入判重标记');
-  assert.ok(DEFAULT_INJECT.includes('data-dsh-pocket-transport-shim="1"'), '进入 DEFAULT_INJECT');
-  assert.ok(DEFAULT_INJECT.includes('data-dsh-pocket-polyfill="1"'), 'polyfill 仍保留');
+  assert.ok(TRANSPORT_API_CLIENT_SHIM.includes('data-dsh-pocket-frog-transport-shim="1"'), '带注入判重标记');
+  assert.ok(DEFAULT_INJECT.includes('data-dsh-pocket-frog-transport-shim="1"'), '进入 DEFAULT_INJECT');
+  assert.ok(DEFAULT_INJECT.includes('data-dsh-pocket-frog-polyfill="1"'), 'polyfill 仍保留');
 });
 
 test('shim（issue #96）：宿主之后赋值的 transport 缺 createApiClient 时补兜底', () => {

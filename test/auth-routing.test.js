@@ -14,7 +14,7 @@ let savedHome = null;
 function withTempHome(fn) {
   return (async () => {
     savedHome = process.env.DSH_HOME;
-    tmpHome = await mkdtemp(join(tmpdir(), 'dsh-pocket-auth-'));
+    tmpHome = await mkdtemp(join(tmpdir(), 'dsh-pocket-frog-auth-'));
     process.env.DSH_HOME = tmpHome;
     try {
       return await fn();

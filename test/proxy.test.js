@@ -1,4 +1,4 @@
-// dsh-pocket 代理测试（假上游，验证 Host/Origin 改写 + WebSocket 透传）
+// dsh-pocket-frog 代理测试（假上游，验证 Host/Origin 改写 + WebSocket 透传）
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -75,7 +75,7 @@ test('issue #81: 导航请求遇上游 403 forbidden → 改写为可操作提�
     const res = await fetch(`http://127.0.0.1:${proxy.port}/`, { headers: { Accept: 'text/html' } });
     assert.equal(res.status, 403, '状态码保持 403（未授权访问未授予）');
     assert.match(res.headers.get('content-type') ?? '', /text\/html/, '提示页是 HTML');
-    assert.equal(res.headers.get('x-dsh-pocket-gate'), 'desktop-browser-access', '标记门禁来源');
+    assert.equal(res.headers.get('x-dsh-pocket-frog-gate'), 'desktop-browser-access', '标记门禁来源');
     const html = await res.text();
     assert.match(html, /浏览器访问/, '提示页说明需开启浏览器访问');
     assert.match(html, /compatibility/, '提示页给出 compatibility 模式配置');
@@ -93,7 +93,7 @@ test('issue #81: API 请求遇上游 403 forbidden → 原样透传（不改写�
     assert.equal(res.status, 403);
     assert.match(res.headers.get('content-type') ?? '', /text\/plain/, '原样透传 text/plain');
     assert.equal(await res.text(), 'forbidden', '原样透传 body');
-    assert.equal(res.headers.get('x-dsh-pocket-gate'), null, 'API 不标门禁');
+    assert.equal(res.headers.get('x-dsh-pocket-frog-gate'), null, 'API 不标门禁');
   } finally {
     await proxy.close();
     await new Promise((r) => up.server.close(r));
@@ -108,7 +108,7 @@ test('issue #81: 其他 403 文本（非 forbidden）不误判为桌面门禁', 
     assert.equal(res.status, 403);
     assert.match(res.headers.get('content-type') ?? '', /text\/plain/, '原样透传（非提示页）');
     assert.equal(await res.text(), 'denied', '原样透传 body');
-    assert.equal(res.headers.get('x-dsh-pocket-gate'), null, '不标门禁');
+    assert.equal(res.headers.get('x-dsh-pocket-frog-gate'), null, '不标门禁');
   } finally {
     await proxy.close();
     await new Promise((r) => up.server.close(r));
@@ -379,13 +379,13 @@ test('会话指纹已移除（2.10.0）：页面与登录页不再注入指纹/a
   try {
     const pub = (await getWithHost(proxy.port, 'abc.trycloudflare.com')).body;
     assert.ok(pub.includes('此公网地址'), '公网登录页正常');
-    assert.ok(!pub.includes('dsh-pocket-session'), '不再注入会话指纹 meta');
-    assert.ok(!pub.includes('dsh-pocket-access'), '不再注入访问类型标记');
+    assert.ok(!pub.includes('dsh-pocket-frog-session'), '不再注入会话指纹 meta');
+    assert.ok(!pub.includes('dsh-pocket-frog-access'), '不再注入访问类型标记');
     assert.ok(!pub.includes('会话指纹'), '登录页不再展示指纹');
 
     const lan = (await getWithHost(proxy.port, '192.168.1.100:3081')).body;
     assert.ok(lan.includes('此局域网地址'), '局域网登录页提示为局域网文案');
-    assert.ok(!lan.includes('dsh-pocket-session'), '局域网也不含指纹 meta');
+    assert.ok(!lan.includes('dsh-pocket-frog-session'), '局域网也不含指纹 meta');
   } finally {
     await proxy.close();
     await new Promise((r) => up.close(r));
@@ -631,11 +631,11 @@ test('访问令牌认证（issue #13）：公网需登录、cookie 放行、局�
   const r4 = await raw({ ...publicH, 'Content-Type': 'application/x-www-form-urlencoded' }, 'POST', 'token=' + TOKEN, '/pocket-login');
   assert.equal(r4.status, 302, '正确密码重定向');
   const sc = (r4.headers['set-cookie'] || []).join(';');
-  assert.ok(sc.includes('dsh_pocket_token=' + TOKEN), '种 HttpOnly cookie');
+  assert.ok(sc.includes('dsh_pocket_frog_token=' + TOKEN), '种 HttpOnly cookie');
   assert.ok(sc.includes('HttpOnly'), 'HttpOnly');
 
   // 5) 带 cookie → 放行
-  const r5 = await raw({ Host: 'abc.trycloudflare.com', Accept: 'application/json', Cookie: 'dsh_pocket_token=' + TOKEN });
+  const r5 = await raw({ Host: 'abc.trycloudflare.com', Accept: 'application/json', Cookie: 'dsh_pocket_frog_token=' + TOKEN });
   assert.equal(r5.status, 200, '带 cookie 放行');
   assert.ok(r5.body.includes('dsh'), '内容正常');
 
@@ -644,7 +644,7 @@ test('访问令牌认证（issue #13）：公网需登录、cookie 放行、局�
   assert.equal(r6.status, 200);
   assert.ok(r6.body.includes('访问密码'), '局域网也需要密码（登录页）');
   // 局域网带 cookie → 放行
-  const r6b = await raw({ ...lanH, Cookie: 'dsh_pocket_token=' + TOKEN });
+  const r6b = await raw({ ...lanH, Cookie: 'dsh_pocket_frog_token=' + TOKEN });
   assert.equal(r6b.status, 200, '局域网带 cookie 放行');
 
   // 7) WS：未认证 → 拒绝
@@ -701,16 +701,16 @@ test('会话保持（issue #33）：登录 cookie 绑定进程 sessionKey，持�
     const r1 = await raw({ Host: 'abc.trycloudflare.com', 'Content-Type': 'application/x-www-form-urlencoded' }, 'POST', 'token=' + TOKEN, '/pocket-login');
     assert.equal(r1.status, 302, '登录成功');
     const sc = (r1.headers['set-cookie'] || []).join(';');
-    assert.ok(sc.includes('dsh_pocket_token=' + cookieOf(TOKEN, SK1)), 'cookie 绑定 sessionKey 派生');
+    assert.ok(sc.includes('dsh_pocket_frog_token=' + cookieOf(TOKEN, SK1)), 'cookie 绑定 sessionKey 派生');
     assert.ok(sc.includes('Max-Age=2592000'), '持久 cookie（30 天）');
     assert.ok(sc.includes('HttpOnly'), 'HttpOnly');
 
     // 2) 带派生 cookie → 放行
-    const r2 = await raw({ Host: 'abc.trycloudflare.com', Accept: 'application/json', Cookie: 'dsh_pocket_token=' + cookieOf(TOKEN, SK1) }, 'GET', undefined, '/api/hello');
+    const r2 = await raw({ Host: 'abc.trycloudflare.com', Accept: 'application/json', Cookie: 'dsh_pocket_frog_token=' + cookieOf(TOKEN, SK1) }, 'GET', undefined, '/api/hello');
     assert.equal(r2.status, 200, '正确 cookie 放行');
 
     // 3) 旧格式 cookie（= PIN 本身）不再放行（升级后旧登录失效，需重新输入）
-    const r3 = await raw({ Host: 'abc.trycloudflare.com', Accept: 'application/json', Cookie: 'dsh_pocket_token=' + TOKEN }, 'GET', undefined, '/api/hello');
+    const r3 = await raw({ Host: 'abc.trycloudflare.com', Accept: 'application/json', Cookie: 'dsh_pocket_frog_token=' + TOKEN }, 'GET', undefined, '/api/hello');
     assert.equal(r3.status, 401, '裸 PIN cookie 已失效');
 
     // 4) 模拟 dsh web 重启（新 sessionKey）→ 旧 cookie 失效，需重新登录；新会话 cookie 放行
@@ -722,9 +722,9 @@ test('会话保持（issue #33）：登录 cookie 绑定进程 sessionKey，持�
     });
     try {
       const raw2 = makeRaw(proxy2.port);
-      const r4 = await raw2({ Host: 'abc.trycloudflare.com', Accept: 'application/json', Cookie: 'dsh_pocket_token=' + cookieOf(TOKEN, SK1) }, 'GET', undefined, '/api/hello');
+      const r4 = await raw2({ Host: 'abc.trycloudflare.com', Accept: 'application/json', Cookie: 'dsh_pocket_frog_token=' + cookieOf(TOKEN, SK1) }, 'GET', undefined, '/api/hello');
       assert.equal(r4.status, 401, '重启后旧 cookie 失效（需重新输入）');
-      const r5 = await raw2({ Host: 'abc.trycloudflare.com', Accept: 'application/json', Cookie: 'dsh_pocket_token=' + cookieOf(TOKEN, SK2) }, 'GET', undefined, '/api/hello');
+      const r5 = await raw2({ Host: 'abc.trycloudflare.com', Accept: 'application/json', Cookie: 'dsh_pocket_frog_token=' + cookieOf(TOKEN, SK2) }, 'GET', undefined, '/api/hello');
       assert.equal(r5.status, 200, '新会话 cookie 放行');
     } finally {
       await proxy2.close();
@@ -1023,7 +1023,7 @@ test('issue #90：?token= 与 WS 的密码尝试同样计入限速（堵掉可�
     const lockedButRight = await guess('10.9.0.2', TOKEN);
     assert.ok(lockedButRight.body.includes('尝试次数过多'), '锁定期内不再比对密码');
     assert.ok(
-      !(lockedButRight.headers['set-cookie'] ?? []).toString().includes('dsh_pocket_token'),
+      !(lockedButRight.headers['set-cookie'] ?? []).toString().includes('dsh_pocket_frog_token'),
       '锁定期内不得种认证 cookie',
     );
 
@@ -1037,7 +1037,7 @@ test('issue #90：?token= 与 WS 的密码尝试同样计入限速（堵掉可�
     await guess('10.9.0.3', '00000000');
     const ok = await guess('10.9.0.3', TOKEN);
     assert.ok(
-      (ok.headers['set-cookie'] ?? []).toString().includes('dsh_pocket_token'),
+      (ok.headers['set-cookie'] ?? []).toString().includes('dsh_pocket_frog_token'),
       '正确 ?token= 放行并种 cookie',
     );
     // 清空的证据：又要重新累计 3 次才锁（前 2 次仍是普通错误提示）
@@ -1134,7 +1134,7 @@ test('issue #90：HTTP 与 WS 两条入口都必须走 policyHost，不能只改
 test('advancedNoticeScript：注入 advanced 模式提示覆盖层（issue #19）', async () => {
   const { advancedNoticeScript } = await import('../lib/proxy.mjs');
   const s = advancedNoticeScript();
-  assert.ok(s.includes('dsh-pocket-advanced-notice'), '有标记');
+  assert.ok(s.includes('dsh-pocket-frog-advanced-notice'), '有标记');
   assert.ok(s.includes('advanced'), '提示 advanced');
   assert.ok(s.includes('compatibility'), '提示切回 compatibility');
   assert.ok(s.includes('position:fixed'), '固定覆盖层（白屏也能看到）');
@@ -1189,8 +1189,8 @@ test('upstreamPathWithLaunchToken（issue #77）：首屏根路径补 token，�
   // 老版本 dsh（无 token）→ 原样转发
   assert.equal(upstreamPathWithLaunchToken('/', 'GET', undefined, ''), '/', '无 token 时原样');
   // 登录成功后的强制握手标记：即使带着旧 cookie 也重做一次（cookie 可能已过期/被撤销）
-  assert.equal(upstreamPathWithLaunchToken('/?dsh-pocket-auth=1', 'GET', 'dsh-auth-abc=1', TOK),
-    `/?dsh-pocket-auth=1&token=${TOK}`, '带强制标记时无视旧 cookie');
+  assert.equal(upstreamPathWithLaunchToken('/?dsh-pocket-frog-auth=1', 'GET', 'dsh-auth-abc=1', TOK),
+    `/?dsh-pocket-frog-auth=1&token=${TOK}`, '带强制标记时无视旧 cookie');
 });
 
 // ---------- 清理历史遗留的 dsh-desktop-* 参数（issue #75） ----------
@@ -1295,7 +1295,7 @@ test('端到端（issue #77 + #91）：代理自动补 token 完成会话握手�
     // Set-Cookie 照发、meta refresh 跳回 `/`。
     const first = await fetch(`${base}/`, { redirect: 'manual', headers: { host: 'abc.trycloudflare.com' } });
     assert.equal(first.status, 200, '首屏返回 200 过渡页（不是 303）');
-    assert.equal(first.headers.get('x-dsh-pocket-handshake'), 'transition', '标记为握手过渡页');
+    assert.equal(first.headers.get('x-dsh-pocket-frog-handshake'), 'transition', '标记为握手过渡页');
     const setCookie = first.headers.get('set-cookie') ?? '';
     assert.ok(setCookie.includes('dsh-auth-'), '过渡页照常下发会话 cookie');
     const page = await first.text();
@@ -1337,23 +1337,23 @@ test('issue #91：cookie 回不来时握手不会无限循环——达到上限�
     for (let i = 1; i <= 3; i++) {
       const r = await fetch(`${base}/`, { redirect: 'manual', headers: { host: '192.168.1.50:3081' } });
       assert.equal(r.status, 200, `第 ${i} 次仍是过渡页`);
-      assert.equal(r.headers.get('x-dsh-pocket-handshake'), 'transition', `第 ${i} 次标记为过渡页`);
+      assert.equal(r.headers.get('x-dsh-pocket-frog-handshake'), 'transition', `第 ${i} 次标记为过渡页`);
     }
     // 第 4 次：已达上限 → 不再注入 token，直接给提示页（不再转发给上游）
     const hitsBefore = upstreamHits;
     const blocked = await fetch(`${base}/`, { redirect: 'manual', headers: { host: '192.168.1.50:3081' } });
     assert.equal(blocked.status, 503, '达到上限后返回 503 提示页');
-    assert.equal(blocked.headers.get('x-dsh-pocket-handshake'), 'blocked', '标记为握手被阻断');
+    assert.equal(blocked.headers.get('x-dsh-pocket-frog-handshake'), 'blocked', '标记为握手被阻断');
     const body = await blocked.text();
     assert.match(body, /太多|Safari|cookie/, '提示页说明了原因与规避办法');
     assert.equal(upstreamHits, hitsBefore, '已达上限后不再打上游（不无限循环）');
-    assert.match(body, /dsh-pocket-retry=1/, '提示页给了「重试」出口，用户不会被锁死');
+    assert.match(body, /dsh-pocket-frog-retry=1/, '提示页给了「重试」出口，用户不会被锁死');
 
     // 点「重试」：清零计数 → 握手重新走一遍；且这个自家参数不能透传给上游
-    const retried = await fetch(`${base}/?dsh-pocket-retry=1`, { redirect: 'manual', headers: { host: '192.168.1.50:3081' } });
+    const retried = await fetch(`${base}/?dsh-pocket-frog-retry=1`, { redirect: 'manual', headers: { host: '192.168.1.50:3081' } });
     assert.equal(retried.status, 200, '重试后重新进入握手（过渡页）');
-    assert.equal(retried.headers.get('x-dsh-pocket-handshake'), 'transition', '重试后回到过渡页');
-    assert.ok(seen.every((u) => !u.includes('dsh-pocket-retry')), '重试参数不往上游透传');
+    assert.equal(retried.headers.get('x-dsh-pocket-frog-handshake'), 'transition', '重试后回到过渡页');
+    assert.ok(seen.every((u) => !u.includes('dsh-pocket-frog-retry')), '重试参数不往上游透传');
     assert.ok(seen[seen.length - 1].includes(`token=${TOK}`), '重试请求仍带上启动 token');
   } finally {
     await proxy.close();
@@ -1408,13 +1408,13 @@ test('?token=<原始 PIN> 直达种 HttpOnly cookie，issue #35', async () => {
     });
     assert.equal(r1.status, 200, '主页 200');
     const sc = Array.isArray(r1.setCookie) ? r1.setCookie.join(';') : String(r1.setCookie ?? '');
-    assert.ok(sc.includes(`dsh_pocket_token=${hashed}`), `种 cookie 含哈希值（实得：${sc.slice(0, 200)}）`);
+    assert.ok(sc.includes(`dsh_pocket_frog_token=${hashed}`), `种 cookie 含哈希值（实得：${sc.slice(0, 200)}）`);
     assert.ok(sc.includes('HttpOnly'), 'HttpOnly 标记');
     assert.ok(sc.includes('Max-Age=2592000'), '30 天持久');
 
     // 2) 用刚种的 cookie 访问子资源：200（不再依赖 ?token=）
     const r2 = await new Promise((resolve, reject) => {
-      const req = http.request({ host: '127.0.0.1', port: proxy.port, path: '/assets/x.js', headers: { Host: 'x:3081', Cookie: `dsh_pocket_token=${hashed}` } }, (res) => {
+      const req = http.request({ host: '127.0.0.1', port: proxy.port, path: '/assets/x.js', headers: { Host: 'x:3081', Cookie: `dsh_pocket_frog_token=${hashed}` } }, (res) => {
         res.resume(); res.on('end', () => resolve(res.statusCode));
       });
       req.on('error', reject); req.end();
@@ -1438,7 +1438,7 @@ test('?token=<原始 PIN> 直达种 HttpOnly cookie，issue #35', async () => {
       req.on('error', reject); req.end();
     });
     assert.equal(r4.status, 200, '错误密码走登录页（200）');
-    assert.ok(!String(r4.setCookie ?? '').includes('dsh_pocket_token'), '错误密码不种 cookie');
+    assert.ok(!String(r4.setCookie ?? '').includes('dsh_pocket_frog_token'), '错误密码不种 cookie');
   } finally {
     await proxy.close();
     await new Promise((r) => up.close(r));

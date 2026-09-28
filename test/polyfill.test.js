@@ -16,7 +16,7 @@ function polyfillJs() {
 }
 
 test('polyfill：注入内容带判重标记，且包含 AbortSignal.any 与 randomUUID 两个补丁', () => {
-  assert.ok(RANDOM_UUID_POLYFILL.includes('data-dsh-pocket-polyfill="1"'), '带注入判重标记');
+  assert.ok(RANDOM_UUID_POLYFILL.includes('data-dsh-pocket-frog-polyfill="1"'), '带注入判重标记');
   assert.ok(RANDOM_UUID_POLYFILL.includes('AbortSignal.any'), '含 AbortSignal.any polyfill');
   assert.ok(RANDOM_UUID_POLYFILL.includes('randomUUID'), '含 crypto.randomUUID polyfill');
 });

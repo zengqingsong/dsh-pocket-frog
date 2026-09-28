@@ -16,7 +16,7 @@ async function waitFor(check, message) {
 }
 
 async function fixture(t) {
-  const dir = await mkdtemp(join(tmpdir(), 'dsh-pocket-entry-'));
+  const dir = await mkdtemp(join(tmpdir(), 'dsh-pocket-frog-entry-'));
   const previous = process.env.DSH_HOME;
   process.env.DSH_HOME = dir;
   const disposers = [];
@@ -33,7 +33,7 @@ async function fixture(t) {
     if (message.includes('public tunnel auto-restored')) restores += 1;
     originalInfo(message, ...args);
   });
-  const marker = (home = dir) => join(home, 'dsh-pocket', 'tunnel-auto.json');
+  const marker = (home = dir) => join(home, 'dsh-pocket-frog', 'tunnel-auto.json');
   const hasMarker = async (home) => /"at"\s*:/.test(await readFile(marker(home), 'utf8').catch(() => ''));
 
   function mount({ desktop = false, home } = {}) {

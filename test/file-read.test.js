@@ -28,14 +28,14 @@ test('fileRead 端点已定义', () => {
 test('fileRead 读取真实文件返回正文', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'pocket-fr-'));
   const file = join(dir, 'hello.txt');
-  writeFileSync(file, 'hello dsh-pocket\n');
+  writeFileSync(file, 'hello dsh-pocket-frog\n');
   const { ctx, call } = makeCtx();
   installPocketRpc(ctx, { service: { status: async () => ({}) } });
   const res = await call(POCKET_ENDPOINTS.fileRead, { path: file });
   assert.equal(res.ok, true);
-  assert.equal(res.value.content, 'hello dsh-pocket\n');
+  assert.equal(res.value.content, 'hello dsh-pocket-frog\n');
   assert.equal(res.value.path, file);
-  assert.equal(res.value.size, 'hello dsh-pocket\n'.length);
+  assert.equal(res.value.size, 'hello dsh-pocket-frog\n'.length);
 });
 
 test('fileRead 相对路径按 process.cwd() 解析', async () => {
@@ -44,7 +44,7 @@ test('fileRead 相对路径按 process.cwd() 解析', async () => {
   installPocketRpc(ctx, { service: { status: async () => ({}) } });
   const res = await call(POCKET_ENDPOINTS.fileRead, { path: 'package.json' });
   assert.equal(res.ok, true, '仓库根 package.json 应可读（相对路径按 cwd 解析）');
-  assert.ok(res.value.content.includes('dsh-pocket'));
+  assert.ok(res.value.content.includes('dsh-pocket-frog'));
 });
 
 test('fileRead 相对路径按传入 cwd 解析', async () => {

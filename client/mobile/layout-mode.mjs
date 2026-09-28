@@ -23,11 +23,11 @@ export function persistLayoutFromUrl(urlValue) {
   if (typeof localStorage === 'undefined') return '';
   const v = String(urlValue ?? '').trim();
   try {
-    if (v === 'desktop' || v === 'mobile') localStorage.setItem('dsh-pocket.layout', v);
-    else if (v === 'auto' || v === '') localStorage.removeItem('dsh-pocket.layout');
+    if (v === 'desktop' || v === 'mobile') localStorage.setItem('dsh-pocket-frog.layout', v);
+    else if (v === 'auto' || v === '') localStorage.removeItem('dsh-pocket-frog.layout');
   } catch { /* 隐私模式/无 storage → 静默 */ }
   try {
-    const s = localStorage.getItem('dsh-pocket.layout');
+    const s = localStorage.getItem('dsh-pocket-frog.layout');
     return s === 'desktop' || s === 'mobile' ? s : '';
   } catch {
     return '';
@@ -38,7 +38,7 @@ export function persistLayoutFromUrl(urlValue) {
 export function readStoredLayout() {
   if (typeof localStorage === 'undefined') return '';
   try {
-    const v = localStorage.getItem('dsh-pocket.layout');
+    const v = localStorage.getItem('dsh-pocket-frog.layout');
     return v === 'desktop' || v === 'mobile' ? v : '';
   } catch {
     return '';

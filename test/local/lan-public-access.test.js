@@ -11,7 +11,7 @@
 //
 // 运行前提：
 //   1. 先在宿主端打开 DSH（127.0.0.1:3080 有响应）；
-//   2. dsh-pocket 所需的 cloudflared 可用（通常已下载缓存到 $DSH_HOME/dsh-pocket/bin）。
+//   2. dsh-pocket-frog 所需的 cloudflared 可用（通常已下载缓存到 $DSH_HOME/dsh-pocket-frog/bin）。
 // 然后：npm run test:local
 
 import { test } from 'node:test';

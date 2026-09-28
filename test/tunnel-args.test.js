@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { startQuickTunnel, startNamedTunnel, firstMeaningfulErrorLine } from '../lib/tunnel.mjs';
 
 async function makeFakeCloudflared() {
-  const dir = await mkdtemp(join(tmpdir(), 'dsh-pocket-fake-cf-'));
+  const dir = await mkdtemp(join(tmpdir(), 'dsh-pocket-frog-fake-cf-'));
   const bin = join(dir, 'cloudflared');
   const record = join(dir, 'argv.json');
   // 假二进制：把 argv 写盘，再按模式打印让隧道"就绪"的行后退出
@@ -27,11 +27,11 @@ if (argv.includes('--url')) {
 }
 
 function withFakeBin(bin, fn) {
-  const prev = process.env.DSH_POCKET_CLOUDFLARED;
-  process.env.DSH_POCKET_CLOUDFLARED = bin;
+  const prev = process.env.DSH_POCKET_FROG_CLOUDFLARED;
+  process.env.DSH_POCKET_FROG_CLOUDFLARED = bin;
   return fn().finally(() => {
-    if (prev === undefined) delete process.env.DSH_POCKET_CLOUDFLARED;
-    else process.env.DSH_POCKET_CLOUDFLARED = prev;
+    if (prev === undefined) delete process.env.DSH_POCKET_FROG_CLOUDFLARED;
+    else process.env.DSH_POCKET_FROG_CLOUDFLARED = prev;
   });
 }
 

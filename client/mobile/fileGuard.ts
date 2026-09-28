@@ -61,7 +61,7 @@ async function copyText(text: string): Promise<boolean> {
 export function startFileGuard(
   readFile: (path: string) => Promise<ReadFileResponse>,
 ): () => void {
-  // 轻量 toast：自包含，不依赖 dsh-pocket 面板的 React 状态。
+  // 轻量 toast：自包含，不依赖 dsh-pocket-frog 面板的 React 状态。
   let toastEl: HTMLElement | null = null
   let toastTimer: number | null = null
   const showToast = (text: string): void => {

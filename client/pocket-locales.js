@@ -1,4 +1,4 @@
-// dsh-pocket 设置页签 i18n 词典（与 client/mobile/locales.ts 同款：zh 为源真，en 为译文）。
+// dsh-pocket-frog 设置页签 i18n 词典（与 client/mobile/locales.ts 同款：zh 为源真，en 为译文）。
 // 需要新增字符串时：先加到 zh（key-set 唯一来源），再补 en（key 必须与 zh 完全一致）。
 export const NS = 'pocket'
 
@@ -26,7 +26,7 @@ export const zh = {
   'restartingDetail': '⏳ 正在重启生效（通常 10-30 秒）· 已等待 {s} 秒',
   'updatedAutoDetail': '✅ 已更新，正在自动重启生效，请稍候刷新',
   'updatedRestartDetail': '✅ 已更新，重启 dsh web 生效',
-  'updateFailed': '❌ 失败：{err}（手动更新：dsh plugin --profile web update dsh-pocket --latest -w）',
+  'updateFailed': '❌ 失败：{err}（手动更新：dsh plugin --profile web update dsh-pocket-frog --latest -w）',
   'versionRange': '当前 v{cur} → 最新 v{latest}',
   'wanAccess': '公网访问',
   'pinLabel': '访问密码',
@@ -126,7 +126,7 @@ export const en = {
   'restartingDetail': '⏳ Restarting to apply (usually 10-30s) · {s}s elapsed',
   'updatedAutoDetail': '✅ Updated — auto-restarting in progress, refresh shortly',
   'updatedRestartDetail': '✅ Updated — restart dsh web to apply',
-  'updateFailed': '❌ Failed: {err} (manual update: dsh plugin --profile web update dsh-pocket --latest -w)',
+  'updateFailed': '❌ Failed: {err} (manual update: dsh plugin --profile web update dsh-pocket-frog --latest -w)',
   'versionRange': 'Current v{cur} → latest v{latest}',
   'wanAccess': 'Public access',
   'pinLabel': 'Access PIN',

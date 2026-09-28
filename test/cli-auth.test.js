@@ -18,11 +18,11 @@ import {
   buildAuth,
   entryUrl,
   MIN_PIN_LENGTH,
-} from '../bin/dsh-pocket.mjs';
+} from '../bin/dsh-pocket-frog.mjs';
 
 const execFileAsync = promisify(execFile);
 const here = dirname(fileURLToPath(import.meta.url));
-const cliPath = join(here, '..', 'bin', 'dsh-pocket.mjs');
+const cliPath = join(here, '..', 'bin', 'dsh-pocket-frog.mjs');
 
 test('issue #90：CLI 默认必须有访问密码，且是 CSPRNG 生成的 8 位数字', () => {
   const { pin, source, error } = resolvePin(parseArgs([]), {});
@@ -40,11 +40,11 @@ test('issue #90：CLI 默认必须有访问密码，且是 CSPRNG 生成的 8 �
   assert.ok(!src.includes('Math.random'), 'CLI 的访问密码不得用非加密随机数生成');
 });
 
-test('issue #90：--pin / DSH_POCKET_PIN 可自定义，优先级 flag > env > 随机', () => {
+test('issue #90：--pin / DSH_POCKET_FROG_PIN 可自定义，优先级 flag > env > 随机', () => {
   assert.equal(resolvePin(parseArgs(['--pin', 'hunter2!']), {}).pin, 'hunter2!');
-  assert.equal(resolvePin(parseArgs(['--pin', 'hunter2!']), { DSH_POCKET_PIN: 'from-env-x' }).source, 'flag');
-  assert.equal(resolvePin(parseArgs([]), { DSH_POCKET_PIN: 'from-env-x' }).pin, 'from-env-x');
-  assert.equal(resolvePin(parseArgs([]), { DSH_POCKET_PIN: 'from-env-x' }).source, 'env');
+  assert.equal(resolvePin(parseArgs(['--pin', 'hunter2!']), { DSH_POCKET_FROG_PIN: 'from-env-x' }).source, 'flag');
+  assert.equal(resolvePin(parseArgs([]), { DSH_POCKET_FROG_PIN: 'from-env-x' }).pin, 'from-env-x');
+  assert.equal(resolvePin(parseArgs([]), { DSH_POCKET_FROG_PIN: 'from-env-x' }).source, 'env');
   // 空字符串不算显式指定，回落到随机生成（而不是变成「无密码」）
   assert.equal(resolvePin(parseArgs(['--pin', '']), {}).source, 'generated');
 });
@@ -61,7 +61,7 @@ test(`issue #90：自定义密码短于 ${MIN_PIN_LENGTH} 位必须被拒，不�
 });
 
 test('issue #90：--no-auth 是显式 opt-out —— 只有它能让 auth 为空', () => {
-  const off = resolvePin(parseArgs(['--no-auth']), { DSH_POCKET_PIN: 'from-env-x' });
+  const off = resolvePin(parseArgs(['--no-auth']), { DSH_POCKET_FROG_PIN: 'from-env-x' });
   assert.equal(off.pin, null);
   assert.equal(off.source, 'disabled');
   assert.equal(buildAuth(off.pin), null, '无密码时不应构造 auth');
@@ -101,7 +101,7 @@ test('issue #90：密码要内嵌进入口 URL —— 加了认证不能让扫�
 test('issue #90：为可测性加的 isDirectRun 守卫不能把 CLI 变成哑巴', async () => {
   // --help 必须仍然打印用法并 exit 0（守卫写错时这里会静默无输出）
   const { stdout } = await execFileAsync(process.execPath, [cliPath, '--help']);
-  assert.match(stdout, /dsh-pocket/);
+  assert.match(stdout, /dsh-pocket-frog/);
   assert.match(stdout, /--no-auth/);
   assert.match(stdout, /--pin/);
 

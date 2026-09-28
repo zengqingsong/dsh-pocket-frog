@@ -1,10 +1,10 @@
 {
-  "name": "dsh-pocket",
+  "name": "dsh-pocket-frog",
   "description": "把 DeepSeek Harness 装进你的口袋：一个包、一个设置页，手机扫码即同步访问电脑上的 DSH（局域网 + 公网，实时同屏）。",
   "type": "module",
   "main": "lib/index.js",
   "bin": {
-    "dsh-pocket": "bin/dsh-pocket.mjs"
+    "dsh-pocket-frog": "bin/dsh-pocket-frog.mjs"
   },
   "exports": {
     ".": {
@@ -71,12 +71,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/shaobeichen/dsh-pocket.git"
+    "url": "git+https://github.com/zengqingsong/dsh-pocket-frog.git"
   },
   "bugs": {
-    "url": "https://github.com/shaobeichen/dsh-pocket/issues"
+    "url": "https://github.com/zengqingsong/dsh-pocket-frog/issues"
   },
-  "homepage": "https://github.com/shaobeichen/dsh-pocket",
+  "homepage": "https://github.com/zengqingsong/dsh-pocket-frog",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

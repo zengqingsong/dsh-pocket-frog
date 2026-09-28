@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// dsh-pocket — 把 DeepSeek Harness 装进你的口袋
+// dsh-pocket-frog — 把 DeepSeek Harness 装进你的口袋
 //
 // 用法：
-//   dsh-pocket                 # 局域网模式：手机同一 WiFi 扫码访问
-//   dsh-pocket --public        # 公网模式：cloudflared 隧道，人在外面也能访问
-//   dsh-pocket --port 3081     # 自定义代理端口（默认 3081；dsh web 保持 3080）
+//   dsh-pocket-frog                 # 局域网模式：手机同一 WiFi 扫码访问
+//   dsh-pocket-frog --public        # 公网模式：cloudflared 隧道，人在外面也能访问
+//   dsh-pocket-frog --port 3081     # 自定义代理端口（默认 3081；dsh web 保持 3080）
 //
 // 前提：dsh web 已在 127.0.0.1:3080 运行。
 // 手机看到的界面 = 电脑上的界面，实时同步（WebSocket 流式透传）。
@@ -54,13 +54,13 @@ export function parseArgs(argv) {
  * 默认绑 loopback 等于把这个功能废掉。改成默认生成 PIN，并把它内嵌进二维码的
  * `?token=` —— 扫码体验完全不变，手动敲地址的人才会看到登录页。
  *
- * 优先级：`--pin` > `DSH_POCKET_PIN` > CSPRNG 随机生成。
+ * 优先级：`--pin` > `DSH_POCKET_FROG_PIN` > CSPRNG 随机生成。
  * @returns {{ pin: string|null, source: 'flag'|'env'|'generated'|'disabled', error?: string }}
  */
 export function resolvePin({ pin = null, noAuth = false } = {}, env = {}) {
   if (noAuth) return { pin: null, source: 'disabled' };
   const explicit = pin != null && pin !== '' ? { value: String(pin), source: 'flag' }
-    : (env.DSH_POCKET_PIN ? { value: String(env.DSH_POCKET_PIN), source: 'env' } : null);
+    : (env.DSH_POCKET_FROG_PIN ? { value: String(env.DSH_POCKET_FROG_PIN), source: 'env' } : null);
   if (explicit) {
     if (explicit.value.length < MIN_PIN_LENGTH) {
       return {
@@ -98,16 +98,16 @@ export function entryUrl(base, pin) {
 }
 
 function printHelp() {
-  console.log(`dsh-pocket — 手机访问电脑上的 DeepSeek Harness
+  console.log(`dsh-pocket-frog — 手机访问电脑上的 DeepSeek Harness
 
 用法：
-  dsh-pocket             局域网模式（手机同一 WiFi）
-  dsh-pocket --public    公网模式（cloudflared 隧道，人在外面）
-  dsh-pocket --port 3081 自定义代理端口
-  dsh-pocket --host      自定义监听地址（默认 0.0.0.0）
-  dsh-pocket --pin <值>  自定义访问密码（至少 ${MIN_PIN_LENGTH} 位；也可用环境变量 DSH_POCKET_PIN）
-  dsh-pocket --no-auth   关闭访问密码（不推荐，见下）
-  dsh-pocket --help      帮助
+  dsh-pocket-frog             局域网模式（手机同一 WiFi）
+  dsh-pocket-frog --public    公网模式（cloudflared 隧道，人在外面）
+  dsh-pocket-frog --port 3081 自定义代理端口
+  dsh-pocket-frog --host      自定义监听地址（默认 0.0.0.0）
+  dsh-pocket-frog --pin <值>  自定义访问密码（至少 ${MIN_PIN_LENGTH} 位；也可用环境变量 DSH_POCKET_FROG_PIN）
+  dsh-pocket-frog --no-auth   关闭访问密码（不推荐，见下）
+  dsh-pocket-frog --help      帮助
 
 前提：dsh web 已在 127.0.0.1:3080 运行（npx @deepseek-ai/dsh web）。
 
@@ -145,14 +145,14 @@ async function main() {
   const pin = resolved.pin;
   const auth = buildAuth(pin);
 
-  console.log('🚀 dsh-pocket 启动中…');
+  console.log('🚀 dsh-pocket-frog 启动中…');
   const { port, close } = await createPocketProxy({ ...args, auth });
 
   if (pin) {
     console.log(`\n🔐 访问密码：${pin}${resolved.source === 'generated' ? '（本次随机生成）' : ''}`);
     console.log('   二维码已内嵌密码，扫码直达；手动输入地址时需要填写。本机访问免密。');
     if (resolved.source === 'generated') {
-      console.log(`   固定密码：--pin <值> 或 DSH_POCKET_PIN=<值>`);
+      console.log(`   固定密码：--pin <值> 或 DSH_POCKET_FROG_PIN=<值>`);
     }
   } else {
     console.log('\n⚠️  已用 --no-auth 关闭访问密码。');
@@ -171,7 +171,7 @@ async function main() {
   const controller = new AbortController();
   let tunnel = null;
   const shutdown = async () => {
-    console.log('\n👋 dsh-pocket 已退出 | bye');
+    console.log('\n👋 dsh-pocket-frog 已退出 | bye');
     controller.abort();
     tunnel?.kill();
     await close().catch(() => {});
@@ -193,7 +193,7 @@ async function main() {
     console.log(`   （加 --public 开启公网隧道）`);
   }
 
-  console.log(`✅ dsh-pocket 已就绪：手机扫码上面的二维码，看到的界面与电脑完全一致、实时同步。\n   按 Ctrl+C 停止。`);
+  console.log(`✅ dsh-pocket-frog 已就绪：手机扫码上面的二维码，看到的界面与电脑完全一致、实时同步。\n   按 Ctrl+C 停止。`);
   await new Promise(() => {});
 }
 
@@ -210,7 +210,7 @@ const isDirectRun = (() => {
 
 if (isDirectRun) {
   main().catch((err) => {
-    console.error(`❌ dsh-pocket: ${err?.message ?? err}`);
+    console.error(`❌ dsh-pocket-frog: ${err?.message ?? err}`);
     process.exit(1);
   });
 }

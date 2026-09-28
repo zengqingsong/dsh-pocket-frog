@@ -1,7 +1,7 @@
-// dsh-pocket 设置页签 RPC 契约（client 与 host 共享）
-export const POCKET_RPC_CHANNEL = '/dsh-pocket';
-export const MOBILE_RIGHTBAR_ATTRIBUTE = 'data-dsh-pocket-mobile-rightbar';
-export const MOBILE_RIGHTBAR_EVENT = 'dsh-pocket:mobile-rightbar';
+// dsh-pocket-frog 设置页签 RPC 契约（client 与 host 共享）
+export const POCKET_RPC_CHANNEL = '/dsh-pocket-frog';
+export const MOBILE_RIGHTBAR_ATTRIBUTE = 'data-dsh-pocket-frog-mobile-rightbar';
+export const MOBILE_RIGHTBAR_EVENT = 'dsh-pocket-frog:mobile-rightbar';
 
 export const POCKET_ENDPOINTS = Object.freeze({
   status: 'pocket.status',

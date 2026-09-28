@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-  id: "dsh-pocket",
+  id: "dsh-pocket-frog",
   factory: (require) => {
     var module = { exports: {} };
     var exports = module.exports;
@@ -40,9 +40,9 @@ module.exports = __toCommonJS(index_exports);
 var import_react2 = require("react");
 
 // client/api.js
-var POCKET_RPC_CHANNEL = "/dsh-pocket";
-var MOBILE_RIGHTBAR_ATTRIBUTE = "data-dsh-pocket-mobile-rightbar";
-var MOBILE_RIGHTBAR_EVENT = "dsh-pocket:mobile-rightbar";
+var POCKET_RPC_CHANNEL = "/dsh-pocket-frog";
+var MOBILE_RIGHTBAR_ATTRIBUTE = "data-dsh-pocket-frog-mobile-rightbar";
+var MOBILE_RIGHTBAR_EVENT = "dsh-pocket-frog:mobile-rightbar";
 var POCKET_ENDPOINTS = Object.freeze({
   status: "pocket.status",
   tunnelStart: "tunnel.start",
@@ -1005,10 +1005,10 @@ var MOBILE_CSS = `
   }
   /* The native rightbar entry is visible by default. Users who prefer the
      compact header can turn it off in Pocket settings. */
-  body[data-dsh-pocket-mobile-rightbar="off"] [data-conversation-header-corner] {
+  body[data-dsh-pocket-frog-mobile-rightbar="off"] [data-conversation-header-corner] {
     display: none !important;
   }
-  body:not([data-dsh-pocket-mobile-rightbar="off"]) [data-mobile-nav="files"] {
+  body:not([data-dsh-pocket-frog-mobile-rightbar="off"]) [data-mobile-nav="files"] {
     right: 44px !important;
   }
 
@@ -1590,12 +1590,12 @@ function persistLayoutFromUrl(urlValue) {
   if (typeof localStorage === "undefined") return "";
   const v = String(urlValue ?? "").trim();
   try {
-    if (v === "desktop" || v === "mobile") localStorage.setItem("dsh-pocket.layout", v);
-    else if (v === "auto" || v === "") localStorage.removeItem("dsh-pocket.layout");
+    if (v === "desktop" || v === "mobile") localStorage.setItem("dsh-pocket-frog.layout", v);
+    else if (v === "auto" || v === "") localStorage.removeItem("dsh-pocket-frog.layout");
   } catch {
   }
   try {
-    const s = localStorage.getItem("dsh-pocket.layout");
+    const s = localStorage.getItem("dsh-pocket-frog.layout");
     return s === "desktop" || s === "mobile" ? s : "";
   } catch {
     return "";
@@ -1608,7 +1608,7 @@ function mobileApply(ctx) {
   const narrowMQ = window.matchMedia("(max-width: 1023px)");
   const stored = persistLayoutFromUrl(urlValue);
   const layout = resolveLayout({ urlValue, stored, narrowMatch: narrowMQ.matches });
-  document.body?.setAttribute("data-dsh-pocket-layout", layout);
+  document.body?.setAttribute("data-dsh-pocket-frog-layout", layout);
   if (layout === "desktop") return;
   let narrow = narrowMQ;
   if (layout === "mobile") {
@@ -1904,7 +1904,7 @@ var zh2 = {
   "restartingDetail": "\u23F3 \u6B63\u5728\u91CD\u542F\u751F\u6548\uFF08\u901A\u5E38 10-30 \u79D2\uFF09\xB7 \u5DF2\u7B49\u5F85 {s} \u79D2",
   "updatedAutoDetail": "\u2705 \u5DF2\u66F4\u65B0\uFF0C\u6B63\u5728\u81EA\u52A8\u91CD\u542F\u751F\u6548\uFF0C\u8BF7\u7A0D\u5019\u5237\u65B0",
   "updatedRestartDetail": "\u2705 \u5DF2\u66F4\u65B0\uFF0C\u91CD\u542F dsh web \u751F\u6548",
-  "updateFailed": "\u274C \u5931\u8D25\uFF1A{err}\uFF08\u624B\u52A8\u66F4\u65B0\uFF1Adsh plugin --profile web update dsh-pocket --latest -w\uFF09",
+  "updateFailed": "\u274C \u5931\u8D25\uFF1A{err}\uFF08\u624B\u52A8\u66F4\u65B0\uFF1Adsh plugin --profile web update dsh-pocket-frog --latest -w\uFF09",
   "versionRange": "\u5F53\u524D v{cur} \u2192 \u6700\u65B0 v{latest}",
   "wanAccess": "\u516C\u7F51\u8BBF\u95EE",
   "pinLabel": "\u8BBF\u95EE\u5BC6\u7801",
@@ -2002,7 +2002,7 @@ var en2 = {
   "restartingDetail": "\u23F3 Restarting to apply (usually 10-30s) \xB7 {s}s elapsed",
   "updatedAutoDetail": "\u2705 Updated \u2014 auto-restarting in progress, refresh shortly",
   "updatedRestartDetail": "\u2705 Updated \u2014 restart dsh web to apply",
-  "updateFailed": "\u274C Failed: {err} (manual update: dsh plugin --profile web update dsh-pocket --latest -w)",
+  "updateFailed": "\u274C Failed: {err} (manual update: dsh plugin --profile web update dsh-pocket-frog --latest -w)",
   "versionRange": "Current v{cur} \u2192 latest v{latest}",
   "wanAccess": "Public access",
   "pinLabel": "Access PIN",
@@ -2079,7 +2079,7 @@ var en2 = {
 };
 
 // client/index.jsx
-var name = "dsh-pocket";
+var name = "dsh-pocket-frog";
 var inject = ["slots", "connection", "layout", "locale", "sessionLogDownload"];
 function fmt(t, key, vars) {
   let s = t(key);
@@ -2166,7 +2166,7 @@ function PocketSettingsTab({ rpcCall, t }) {
     const check = async () => {
       try {
         const v = await call(POCKET_ENDPOINTS.version, {});
-        const meta = await (await fetch("https://registry.npmjs.org/dsh-pocket/latest", { cache: "no-store" })).json();
+        const meta = await (await fetch("https://registry.npmjs.org/dsh-pocket-frog/latest", { cache: "no-store" })).json();
         if (!alive) return;
         const latest = typeof meta?.version === "string" ? meta.version : null;
         if (latest && v.current && compareVersions(latest, v.current) > 0) {
@@ -2449,7 +2449,7 @@ function PocketSettingsTab({ rpcCall, t }) {
         (0, import_react2.createElement)("div", { style: { whiteSpace: "nowrap" } }, t("starAsk")),
         (0, import_react2.createElement)(
           "a",
-          { href: "https://github.com/shaobeichen/dsh-pocket", target: "_blank", rel: "noreferrer", style: { color: "var(--dsw-alias-brand-primary,#4f6ef7)", fontSize: 12, lineHeight: 1.6, textDecoration: "underline" } },
+          { href: "https://github.com/shaobeichen/dsh-pocket-frog", target: "_blank", rel: "noreferrer", style: { color: "var(--dsw-alias-brand-primary,#4f6ef7)", fontSize: 12, lineHeight: 1.6, textDecoration: "underline" } },
           t("starCta")
         )
       )
@@ -2753,7 +2753,7 @@ function PocketSettingsTab({ rpcCall, t }) {
       { style: { ...styles.block, textAlign: "center" } },
       (0, import_react2.createElement)(
         "a",
-        { href: "https://github.com/shaobeichen/dsh-pocket/issues", target: "_blank", rel: "noreferrer", style: { fontSize: 12, color: "var(--dsw-alias-label-secondary,#6b7280)", textDecoration: "none" } },
+        { href: "https://github.com/shaobeichen/dsh-pocket-frog/issues", target: "_blank", rel: "noreferrer", style: { fontSize: 12, color: "var(--dsw-alias-label-secondary,#6b7280)", textDecoration: "none" } },
         t("feedback")
       )
     )
@@ -2773,7 +2773,7 @@ function apply(ctx) {
   mobileApply(ctx);
   const rpcCall = (endpoint, payload, signal) => ctx.connection.rpc.call(POCKET_RPC_CHANNEL, endpoint, payload, signal);
   const translate = ctx.locale.bind(NS2);
-  ctx.effect(() => ctx.locale.register(NS2, { zh: zh2, en: en2 }), "dsh-pocket: pocket locale dictionaries");
+  ctx.effect(() => ctx.locale.register(NS2, { zh: zh2, en: en2 }), "dsh-pocket-frog: pocket locale dictionaries");
   ctx.slots.inject(
     "settings.section",
     () => ctx.slots.register(

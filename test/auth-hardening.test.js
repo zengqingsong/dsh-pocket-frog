@@ -117,7 +117,7 @@ test('登录（POST /pocket-login）：主密码与替代令牌都能登录，�
     assert.equal(rAlt.status, 302, '替代令牌登录成功（302 回首页）');
     const setCookie = String(rAlt.headers['set-cookie'] ?? '');
     assert.ok(setCookie.includes(expectedCookie(ALT, SESSION_KEY)), 'cookie 绑定替代令牌而非主 PIN');
-    const withAlt = await getWithCookie(`dsh_pocket_token=${expectedCookie(ALT, SESSION_KEY)}`);
+    const withAlt = await getWithCookie(`dsh_pocket_frog_token=${expectedCookie(ALT, SESSION_KEY)}`);
     assert.equal(withAlt.status, 200, '替代令牌的 cookie 可正常访问');
 
     // 2) 主密码照常可用

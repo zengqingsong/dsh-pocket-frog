@@ -39,17 +39,17 @@ test('persistLayoutFromUrl: 显式 desktop/mobile 写入 localStorage', () => {
     removeItem: (k) => store.delete(k),
   };
   assert.equal(persistLayoutFromUrl('desktop'), 'desktop');
-  assert.equal(store.get('dsh-pocket.layout'), 'desktop');
+  assert.equal(store.get('dsh-pocket-frog.layout'), 'desktop');
   assert.equal(persistLayoutFromUrl('mobile'), 'mobile');
   assert.equal(persistLayoutFromUrl('auto'), '');
-  assert.equal(store.has('dsh-pocket.layout'), false);
+  assert.equal(store.has('dsh-pocket-frog.layout'), false);
   assert.equal(persistLayoutFromUrl(''), '');
   assert.equal(persistLayoutFromUrl('garbage'), '');
 });
 
 test('打包产物里带上布局模式判定的关键字', () => {
   const bundle = readFileSync(new URL('../client/client.js', import.meta.url), 'utf8');
-  for (const needle of ['dsh-layout', 'dsh-pocket.layout', 'data-dsh-pocket-layout']) {
+  for (const needle of ['dsh-layout', 'dsh-pocket-frog.layout', 'data-dsh-pocket-frog-layout']) {
     assert.ok(bundle.includes(needle), `打包产物缺少 "${needle}" —— 先跑 npm run build:client`);
   }
 });

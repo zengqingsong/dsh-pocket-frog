@@ -447,10 +447,10 @@ export const MOBILE_CSS = `
   }
   /* The native rightbar entry is visible by default. Users who prefer the
      compact header can turn it off in Pocket settings. */
-  body[data-dsh-pocket-mobile-rightbar="off"] [data-conversation-header-corner] {
+  body[data-dsh-pocket-frog-mobile-rightbar="off"] [data-conversation-header-corner] {
     display: none !important;
   }
-  body:not([data-dsh-pocket-mobile-rightbar="off"]) [data-mobile-nav="files"] {
+  body:not([data-dsh-pocket-frog-mobile-rightbar="off"]) [data-mobile-nav="files"] {
     right: 44px !important;
   }
 

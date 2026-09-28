@@ -165,7 +165,7 @@ test('手机端右边栏默认显示，设置关闭后隐藏稳定 header corner
   const css = readFileSync(new URL('../client/mobile/mobile.css.ts', import.meta.url), 'utf8');
   const apply = readFileSync(new URL('../client/mobile/mobile-apply.tsx', import.meta.url), 'utf8');
   assert.ok(
-    css.includes('body[data-dsh-pocket-mobile-rightbar="off"] [data-conversation-header-corner]'),
+    css.includes('body[data-dsh-pocket-frog-mobile-rightbar="off"] [data-conversation-header-corner]'),
     '仅在用户关闭设置时隐藏官方右栏入口',
   );
   assert.ok(
