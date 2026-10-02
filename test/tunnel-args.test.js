@@ -7,6 +7,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { startQuickTunnel, startNamedTunnel, firstMeaningfulErrorLine } from '../lib/tunnel.mjs';
 
+// Windows 上无法 spawn 无扩展名的脚本（Node 不带 shell 时执行不了 .cmd/.bat/无扩展名文件，
+// 直接 ENOENT）——这正是 issue #82 让 `pickSpawnableCloudflared` 只认 .exe/.com 的原因。
+// 这里伪造的 `cloudflared` 就是这种脚本，所以两个需要真正 spawn 的用例在 Windows 上跳过；
+// argv 顺序与平台无关，由 POSIX/CI 覆盖。
+const SKIP_SPAWN_ON_WIN = { skip: process.platform === 'win32' ? 'Windows 无法 spawn 伪造的无扩展名脚本' : false };
+
 async function makeFakeCloudflared() {
   const dir = await mkdtemp(join(tmpdir(), 'dsh-pocket-frog-fake-cf-'));
   const bin = join(dir, 'cloudflared');
@@ -35,7 +41,7 @@ function withFakeBin(bin, fn) {
   });
 }
 
-test('issue #78: 快速隧道 --no-autoupdate 在全局位置（argv[0]）', async () => {
+test('issue #78: 快速隧道 --no-autoupdate 在全局位置（argv[0]）', SKIP_SPAWN_ON_WIN, async () => {
   const { bin, record, dir } = await makeFakeCloudflared();
   try {
     await withFakeBin(bin, async () => {
@@ -53,7 +59,7 @@ test('issue #78: 快速隧道 --no-autoupdate 在全局位置（argv[0]）', asy
   }
 });
 
-test('issue #78: 命名隧道 --no-autoupdate 在全局位置（argv[0]，含 run）', async () => {
+test('issue #78: 命名隧道 --no-autoupdate 在全局位置（argv[0]，含 run）', SKIP_SPAWN_ON_WIN, async () => {
   const { bin, record, dir } = await makeFakeCloudflared();
   try {
     await withFakeBin(bin, async () => {

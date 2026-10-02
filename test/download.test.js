@@ -78,6 +78,68 @@ test('downloadFile：不支持 Range 时回退单线程，字节一致', async (
   }
 });
 
+// ---------- PATH 探测只认可直接 spawn 的二进制（issue #82） ----------
+
+test('pickSpawnableCloudflared（issue #82）：Windows 只认 .exe/.com，忽略 npm 的 .cmd shim', async () => {
+  const { pickSpawnableCloudflared } = await import('../lib/tunnel.mjs');
+  // npm 全局安装的典型输出：无扩展名 shell 脚本 + .cmd，两者 Node 的 spawn 都执行不了
+  const shimOutput = 'C:\\Users\\me\\AppData\\Roaming\\npm\\cloudflared\r\nC:\\Users\\me\\AppData\\Roaming\\npm\\cloudflared.cmd\r\n';
+  assert.equal(pickSpawnableCloudflared(shimOutput, 'win32'), null, 'shim 不可直接执行，应判定为没有');
+  // 真正的 exe（winget/手动安装）必须命中
+  assert.equal(
+    pickSpawnableCloudflared('C:\\Program Files\\cloudflared\\cloudflared.exe\r\n', 'win32'),
+    'C:\\Program Files\\cloudflared\\cloudflared.exe',
+  );
+  // shim 与 exe 同时存在时跳过 shim，挑 exe
+  assert.equal(
+    pickSpawnableCloudflared('C:\\npm\\cloudflared.cmd\r\nC:\\cf\\cloudflared.exe\r\n', 'win32'),
+    'C:\\cf\\cloudflared.exe',
+  );
+  // .com 也算可直接执行
+  assert.equal(pickSpawnableCloudflared('C:\\cf\\cloudflared.com\n', 'win32'), 'C:\\cf\\cloudflared.com');
+  // POSIX：只要绝对路径（相对名/alias 行不可靠，宁可回落到自带二进制）
+  assert.equal(pickSpawnableCloudflared('/usr/local/bin/cloudflared\n', 'linux'), '/usr/local/bin/cloudflared');
+  assert.equal(pickSpawnableCloudflared('alias cloudflared=/opt/cf\n', 'linux'), null);
+  // 探测失败/空输出
+  assert.equal(pickSpawnableCloudflared('', 'win32'), null);
+  assert.equal(pickSpawnableCloudflared(undefined, 'darwin'), null);
+});
+
+test('resolveCloudflared（issue #82）：PATH 上只有 .cmd shim 时回落插件自带二进制', { skip: process.platform !== 'win32' }, async () => {
+  const fsp = await import('node:fs/promises');
+  const os = await import('node:os');
+  const path = await import('node:path');
+  const { resolveCloudflared } = await import('../lib/tunnel.mjs');
+
+  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'dshp-shim-home-'));
+  const shimDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'dshp-shim-path-'));
+  const binDir = path.join(home, 'dsh-pocket-frog', 'bin');
+  await fsp.mkdir(binDir, { recursive: true });
+  await fsp.writeFile(path.join(binDir, 'cloudflared.exe'), 'fake-binary');
+  // 复刻 npm 全局安装：只有 cloudflared.cmd 与无扩展名脚本，没有 .exe
+  await fsp.writeFile(path.join(shimDir, 'cloudflared.cmd'), '@ECHO off\r\n');
+  await fsp.writeFile(path.join(shimDir, 'cloudflared'), '#!/bin/sh\n');
+
+  const prevPath = process.env.PATH;
+  const prevExplicit = process.env.DSH_POCKET_FROG_CLOUDFLARED;
+  const system32 = path.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32');
+  // PATH 只留 shim + System32：where.exe 能跑，系统里真正的 cloudflared.exe 不可见
+  process.env.PATH = `${shimDir};${system32}`;
+  delete process.env.DSH_POCKET_FROG_CLOUDFLARED;
+  let downloading = false;
+  try {
+    const bin = await resolveCloudflared({ home, onPhase: (p) => { if (p === 'downloading') downloading = true; } });
+    assert.notEqual(bin, 'cloudflared', '不应返回 spawn 不了的裸名（旧实现即此处导致 ENOENT）');
+    assert.equal(bin, path.join(binDir, 'cloudflared.exe'), '应命中插件自带二进制: ' + bin);
+    assert.equal(downloading, false, '缓存已存在，不应触发下载');
+  } finally {
+    process.env.PATH = prevPath;
+    if (prevExplicit !== undefined) process.env.DSH_POCKET_FROG_CLOUDFLARED = prevExplicit;
+    await fsp.rm(home, { recursive: true, force: true });
+    await fsp.rm(shimDir, { recursive: true, force: true });
+  }
+});
+
 test('resolveCloudflared：手动放置的资产名文件也能命中缓存（issue #15）', async () => {
   const fsp = await import('node:fs/promises');
   const os = await import('node:os');
@@ -112,10 +174,16 @@ test('resolveCloudflared：Linux 上丢弃 Homebrew bottle 坏缓存（issue #22
   // 模拟 Linux Homebrew bottle 坏缓存：文件含 @@HOMEBREW_PREFIX@@ 占位符
   await fsp.writeFile(path.join(binDir, 'cloudflared'), '@@HOMEBREW_PREFIX@@/lib/ld.so\x00fake-binary');
   let downloading = false;
-  // 在 Linux 上会触发删除 + 重新下载（下载会失败因网络，但我们只验证"不命中坏缓存"）
+  // 这里只验证「坏缓存不被当成可用二进制」，下载本身无关紧要。
+  // 必须把 fetch 打桩：以前这里会真的去 github 拉 17MB，在别的平台（bin 名对不上）
+  // 也会走完整下载，撞上 `npm test` 的 --test-timeout=30000 变成随机红。
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => { throw new Error('ENETUNREACH: stubbed by test'); };
   try {
     await resolveCloudflared({ home, onPhase: (p) => { if (p === 'downloading') downloading = true; } });
-  } catch { /* 下载失败可接受 */ }
+  } catch { /* 下载失败是预期（已被打桩） */ } finally {
+    globalThis.fetch = realFetch;
+  }
   // 坏缓存应已被删除（不再被当成可用二进制）
   const stillThere = await fsp.readFile(path.join(binDir, 'cloudflared'), 'utf8').catch(() => null);
   // 若系统是 Linux 且触发了下载流程 → 文件被删/被覆盖；macOS 上本测试不适用（无 Homebrew 检查）

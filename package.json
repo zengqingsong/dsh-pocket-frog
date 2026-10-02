@@ -1,10 +1,36 @@
 {
   "name": "dsh-pocket-frog",
-  "description": "把 DeepSeek Harness 装进你的口袋：一个包、一个设置页，手机扫码即同步访问电脑上的 DSH（局域网 + 公网，实时同屏）。",
+  "version": "2.10.6",
+  "description": "手机同屏 · Put DeepSeek Harness in your pocket: scan a QR code and drive the dsh web UI on your computer from your phone, over LAN or the public internet, live.",
+  "license": "GPL-2.0",
+  "author": "曾青松 <pypzengqs@126.com> (https://github.com/zengqingsong)",
   "type": "module",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "mobile",
+    "remote",
+    "qr",
+    "tunnel"
+  ],
   "main": "lib/index.js",
   "bin": {
     "dsh-pocket-frog": "bin/dsh-pocket-frog.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zengqingsong/dsh-pocket-frog.git"
+  },
+  "homepage": "https://github.com/zengqingsong/dsh-pocket-frog",
+  "bugs": {
+    "url": "https://github.com/zengqingsong/dsh-pocket-frog/issues"
+  },
+  "scripts": {
+    "build:client": "node client/build.mjs",
+    "release": "semantic-release",
+    "test": "node --test --test-timeout=30000 \"test/*.test.js\"",
+    "test:local": "node --test --test-timeout=300000 \"test/local/*.test.js\""
   },
   "exports": {
     ".": {
@@ -19,13 +45,11 @@
     "client",
     "cordis.patch.yml",
     "README.md",
+    "README.zh-CN.md",
     "LICENSE"
   ],
-  "scripts": {
-    "build:client": "node client/build.mjs",
-    "release": "semantic-release",
-    "test": "node --test --test-timeout=30000 \"test/*.test.js\"",
-    "test:local": "node --test --test-timeout=300000 \"test/local/*.test.js\""
+  "engines": {
+    "node": ">=22"
   },
   "dependencies": {
     "qrcode": "^1.5.4",
@@ -41,19 +65,10 @@
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1"
   },
-  "engines": {
-    "node": ">=22"
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
-  "license": "GPL-2.0",
-  "keywords": [
-    "deepseek-harness",
-    "dsh",
-    "dsh-plugin",
-    "mobile",
-    "remote",
-    "qr",
-    "tunnel"
-  ],
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
@@ -68,18 +83,5 @@
       ],
       "platform": "web"
     }
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/zengqingsong/dsh-pocket-frog.git"
-  },
-  "bugs": {
-    "url": "https://github.com/zengqingsong/dsh-pocket-frog/issues"
-  },
-  "homepage": "https://github.com/zengqingsong/dsh-pocket-frog",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "version": "2.10.6"
+  }
 }

@@ -1,222 +1,246 @@
+# DSH Pocket · dsh-pocket-frog
+
+**English** · [简体中文](./README.zh-CN.md)
+
+[![ci](https://github.com/zengqingsong/dsh-pocket-frog/actions/workflows/test.yml/badge.svg)](https://github.com/zengqingsong/dsh-pocket-frog/actions/workflows/test.yml)
+
 <p align="center">
   <img src="docs/banner.jpg" alt="DSH Pocket" width="100%">
 </p>
 
-<h1 align="center">DSH Pocket</h1>
+Put **DeepSeek Harness in your pocket**: `dsh web` runs on your computer, and scanning a QR code puts the very same interface in your hand — over LAN or the public internet, live, from anywhere.
 
-<p align="center"><a href="README.en.md">English</a> | <a href="README.md">中文</a></p>
+> 🚧 **Work in progress — local use first**: the renamed version is **not on npm and not listed in the plugin marketplace yet** ([dsh-plugin.org](https://dsh-plugin.org/) discovers plugins automatically by scanning GitHub repos carrying the `dsh-plugin` topic, and this repo does not have that topic yet), so for now it can only be installed from GitHub source (see "Install" below). A proper release will come once the tests are in good shape.
 
-<p align="center"><a href="https://trendshift.io/repositories/166736?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-166736" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/166736/daily?language=JavaScript" alt="shaobeichen%2Fdsh-pocket | Trendshift" width="250" height="55"/></a></p>
+Forked from [shaobeichen/dsh-pocket](https://github.com/shaobeichen/dsh-pocket) (GPL-2.0, Copyright (c) 2026 shaobeichen). The upstream notice is kept verbatim in [LICENSE](./LICENSE), and what this fork did on top of it is listed under [Credits](#credits).
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/dsh-pocket-frog"><img alt="npm" src="https://img.shields.io/npm/v/dsh-pocket-frog?color=4d6bfe&label=npm"></a>
-  <a href="https://www.npmjs.com/package/dsh-pocket-frog"><img alt="downloads" src="https://img.shields.io/npm/dm/dsh-pocket-frog?color=4d6bfe"></a>
-  <a href="https://github.com/shaobeichen/dsh-pocket-frog/actions"><img alt="CI" src="https://github.com/shaobeichen/dsh-pocket-frog/actions/workflows/release.yml/badge.svg"></a>
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-GPL--2.0-red.svg"></a>
-  <a href="https://github.com/shaobeichen/dsh-pocket-frog/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/shaobeichen/dsh-pocket-frog"></a>
-  <a href="https://awesome-dsh-plugin.com/zh/"><img alt="Awesome DSH Plugin" src="https://awesome-dsh-plugin.com/badge.svg"></a>
-</p>
+- **Unofficial community plugin** — an independent project, not affiliated with or endorsed by DeepSeek.
+- **GPL-2.0**, one package, with just two runtime dependencies (`qrcode` and `qrcode-terminal`).
+- Traffic only ever goes through your own machine: **LAN mode makes no outbound connections**; only when you click "Enable anywhere" does it use [cloudflared](https://github.com/cloudflare/cloudflared) to open a tunnel to your own Cloudflare, and nothing else is contacted.
+- Access always requires a password: the LAN has its own (on by default, can be turned off) and the public URL gets a random 8-character password (rotated on every enable, or pin your own). Details under "Security (read first)".
+- **Targets DSH `0.1.7-rc.2` on the `web` profile**. Installing runs **no build script**: the client bundle ships inside the package, so it works right after install.
 
-> 把 **DeepSeek Harness 装进你的口袋**：一个包、一个设置页，手机扫二维码就实时看到电脑上的同一个界面——人在外面也能用。
+## What is this
 
-<p align="center">
-  ⭐ 顺手留颗 Star，作者能高兴一整天 &nbsp;·&nbsp; <a href="https://github.com/shaobeichen/dsh-pocket-frog">行，给你一颗 Star</a>
-</p>
+**You want to use DeepSeek Harness on your computer, even when you're not at the computer.**
 
-## 这是什么
+- On your way home, the agent is running a task on your computer — pull out your phone and see where it is, what it produced.
+- Out and about, you want the agent on your computer to look something up or write a snippet — no remote desktop, no SSH.
+- The computer is at home or in the office, you're elsewhere, and you want to **drive your DeepSeek Harness from your phone** — send tasks, watch the output, tap approvals.
 
-**你不在电脑前，也想用电脑上的 DeepSeek Harness。**
+That's what DSH Pocket does: **install it, scan a QR code, and your phone shows and controls the DeepSeek Harness UI in real time — from anywhere.**
 
-- 下班路上，agent 在电脑上跑任务，你想掏出手机看看它干到哪了、结果如何
-- 出门在外，突然想让电脑上的 agent 查点资料、写段代码，但没有远程桌面、没有 SSH
-- 电脑在宿舍/办公室，你人在外面，想随时"操控你的 DeepSeek Harness"——发任务、看输出、点审批
-
-DSH Pocket 就是干这个的：**装上它，手机扫个码，就能实时看到并操控电脑上的 DeepSeek Harness 界面**——人在外面也能用。
-
-实际效果——手机上的界面就是电脑上的界面，实时同步：
+What it looks like — the phone shows the exact same UI as your computer, live:
 
 <p align="center">
-  <img src="docs/interface.jpg" alt="手机上的 DSH 界面" width="100%">
+  <img src="docs/interface.jpg" alt="DSH UI on the phone" width="100%">
 </p>
 
-## ✨ 特性
+## Features
 
-| 特性                    | 说明                                                                                                                                                                               |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 📶 局域网扫码           | 装好即用：设置 → 手机访问，打开就有局域网二维码，手机连同一 WiFi 扫码即开（自动识别本机局域网 IP，**WSL 环境自动取 Windows 物理网卡 IP**）                                         |
-| 🚪 局域网开关           | 设置页可**一键关闭/开启局域网访问**（切换时弹窗提醒）：关闭后局域网二维码/链接立即失效，仅公网可用                                                                                 |
-| 🌐 公网扫码（人在外面） | 点「开启公网访问」→ cloudflared 隧道 → 出公网二维码，4G/任何网络都能访问                                                                                                           |
-| 🏷️ 公网固定域名         | 可选「**命名隧道**」模式：填 Cloudflare Tunnel Token + 自己的域名，公网地址**固定不变**（重启不再变；见下方说明）                                                                  |
-| 🔐 访问密码             | 公网链接默认使用 **8 位随机密码**（每次开启公网自动换新；**可自定义固定密码**——自定义后不再换新）；局域网有独立的默认 **8 位随机密码**（默认开启，设置页可**一键关闭**——关闭后局域网扫码直连） |
-| 🔑 自定义密码           | 公网/局域网密码都可在设置页**设成自己固定的 8–64 位密码（英文字母大小写或数字）**（自定义后公网不再自动换新）                                                                         |
-| 🧘 会话保持             | 手机输一次密码后**长期免输**（登录状态绑定电脑上的 dsh web 进程：只要它不重启，手机不用再输；**dsh web 重启/更新后需重新输入一次**）                                               |
-| ⚡ 实时同步             | 流式输出走 WebSocket 全透传——**电脑上在输出，手机上同步在滚**，可双向操作；内置心跳保活（防路由器 NAT/省电机制静默断链，断线自动重连）                                             |
-| 📱 移动端适配           | 窄屏自动变抽屉布局（移植 dsh-web-mobile，MIT）：侧栏抽屉、会话全宽、状态栏安全区、触控优化                                                                                         |
-| 🧭 可选右边栏           | 手机端显示原生右边栏入口；普通手机可在设置中关闭以保持紧凑，折叠屏展开后可更方便地同时使用终端底栏和右边栏                                                                         |
-| 📁 文件浏览             | 移动端「文件浏览」入口需要宿主提供 explorer 面板（dsh-web-ui 组件）；官方 DSH 未内置时入口自动隐藏，不会出现"点了没反应"                                                           |
-| 🗜️ 传输压缩             | 大 JSON 响应自动 gzip/brotli（长会话 17MB → ~1MB，brotli 质量 6：快且省流量），手机加载更快、更省流量                                                                              |
-| 🔁 隧道自动恢复         | DSH 重启后自动重新拉起之前开着的公网隧道，无需手动重开                                                                                                                             |
-| 🧩 零依赖安装           | 一个 npm 包、一个设置页，没有核心/适配器要分开装；无需账号、无需服务器                                                                                                             |
+| Feature                      | Description                                                                                                                                                                                                                                                                       |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 📶 LAN QR access             | Works out of the box: Settings → Phone access — scan the LAN QR on the same Wi-Fi (auto-detects the LAN IP; **under WSL it picks the Windows host's physical NIC IP**)                                                                                                            |
+| 🚪 LAN switch                | **Turn LAN access off/on with one click** in Settings (a confirmation dialog shows each time): off kills the LAN QR code and link instantly; public access is unaffected                                                                                                          |
+| 🌐 Public QR (from anywhere) | Click "Enable anywhere" → cloudflared tunnel → scan the public QR over 4G / any network                                                                                                                                                                                           |
+| 🏷️ Fixed public hostname     | Optional "**Named tunnel**" mode: paste a Cloudflare Tunnel Token + your own domain — the public address stays **fixed across restarts** (see below)                                                                                                                              |
+| 🔐 Access PIN                | Public links use an **8-digit random PIN** by default (rotated on every tunnel start; **customizable to a fixed PIN** — custom PINs are not rotated); LAN has its own separate **8-digit random PIN** (on by default; switchable off in Settings — then LAN scans connect directly) |
+| 🔑 Custom PINs               | Both the public and LAN PINs can be **set to a fixed 8–64-character PIN using letters and digits in Settings** (custom PINs are never auto-rotated)                                                                                                                               |
+| 🧘 Session persistence       | Enter the PIN once and you're set for a long time (login is tied to the computer's dsh web process: as long as it stays up, the phone won't ask again; **after a dsh web restart/update, enter it once more**)                                                                    |
+| ⚡ Real-time sync            | Streaming output passes through WebSocket untouched — what the computer renders, the phone renders live; fully interactive both ways; built-in WS heartbeat keep-alive (defeats silent NAT/battery link drops with auto-reconnect)                                                |
+| 📱 Mobile-adaptive layout    | Narrow screens get a drawer layout automatically (ported from dsh-web-mobile, MIT): sidebar drawer, full-width conversation, safe-area insets, touch optimizations                                                                                                                |
+| 🧭 Optional right sidebar    | Shows the native right-sidebar entry on mobile; disable it for a compact phone header or keep it available alongside the terminal dock on an unfolded display                                                                                                                     |
+| 📁 File browser              | The mobile "Files" entries need a host-side explorer panel (a dsh-web-ui component); on stock DSH without it the entries are auto-hidden instead of doing nothing                                                                                                                 |
+| 🗜️ Transfer compression      | Large JSON responses are gzip/brotli'd on the fly (17MB session history → ~1MB; brotli quality 6: fast and bandwidth-friendly) — faster loads, less mobile data                                                                                                                   |
+| 🔁 Tunnel auto-restore       | After a DSH restart the previously-running public tunnel comes back automatically                                                                                                                                                                                                 |
+| 🧩 Zero-dependency install   | One package, one settings tab — no core/adapter split, no account, no server. The repo ships the built frontend, so **installing from GitHub source just works with no local build**                                                                                                |
 
-## 🚀 怎么用
+## Usage
 
-**入口在哪**：安装完成并重启 `dsh web` 后，打开 **设置**，左侧边栏就能看到 **「手机访问」** 入口（和「通用设置」「模型」同级）：
+**Where the entry is**: after installing and restarting `dsh web`, open **Settings** — the left sidebar shows **"Phone access"** at the top level (same level as General / Models):
 
 <p align="center">
-  <img src="docs/entry.jpg" alt="手机访问入口" width="70%">
+  <img src="docs/entry.jpg" alt="Phone access entry" width="70%">
 </p>
 
-**前提**：电脑上已装好 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)。如果终端提示 `dsh: command not found`（找不到 dsh 命令），先安装：
+**Prerequisite**: [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) installed. If your terminal says `dsh: command not found`, install it first:
 
 ```sh
-npm install -g @deepseek-ai/dsh     # 全局安装；验证：dsh --version
-# 不想全局装？每次命令前加 npx：npx @deepseek-ai/dsh <命令>
+npm install -g @deepseek-ai/dsh     # global install; verify: dsh --version
+# No global install? Prefix every command with: npx @deepseek-ai/dsh
 ```
 
-```sh
-# 1. 装插件（一个包全都有）
-dsh plugin --profile web add dsh-pocket-frog -w
+### Install (from GitHub source)
 
-# 2. 重启 dsh web
+> ⚠️ **For now you can only install from GitHub source**: the plugin was renamed from `dsh-pocket` to `dsh-pocket-frog` and **the new name is neither on npm nor in the plugin marketplace yet** (`npm view dsh-pocket-frog` → 404; `dsh-market` only lists the old `dsh-pocket`, which points at the upstream repository). So **don't use the package name** — use the repository URL. `add dsh-pocket-frog` will only work once it is published.
+
+```sh
+# 1. Install the plugin (from GitHub source; everything in one package)
+dsh plugin --profile web add github:zengqingsong/dsh-pocket-frog -w
+
+# 2. Restart dsh web
 npx @deepseek-ai/dsh web
 ```
 
-### 局域网（同一 WiFi）
+The package ships the built frontend (`client/client.js`), so **it works right after install — no local build**.
 
-设置 → **手机访问** → 手机扫「📶 局域网」二维码 → 打开链接**输入局域网密码**（显示在设置页局域网区块，点「刷新」可换新，或点「自定义」设成自己固定的 8–64 位密码——英文字母大小写或数字）→ 打开的就是电脑上的 DSH，实时同步。
+> To pin a commit or branch: `... add github:zengqingsong/dsh-pocket-frog#<sha or branch> -w`.
 
-> 「**局域网访问**」开关默认**开**：可一键**关闭/开启**（切换时弹窗提醒）——关闭后局域网二维码/链接立即失效（手机打不开），**公网不受影响**；想恢复时再点「开」即可。
+### LAN (same Wi-Fi)
+
+Settings → **Phone access** → scan the "📶 LAN" QR code → enter the **LAN PIN** (shown in the LAN block; hit **Refresh** to roll a new one, or **Customize** to set an 8–64-character alphanumeric PIN) → the phone opens the exact same DSH, in real time.
+
+> The "**LAN access**" switch is **on by default** and can be **turned off/on with one click** (a confirmation dialog shows each time). Off kills the LAN QR code and link instantly (phones can't open them); **public access is unaffected**. Tap "On" to restore it.
 >
-> 局域网密码**默认开启**（安全优先）。如果只有自己用、嫌每次输密码麻烦，可在设置页局域网区块把「局域网访问密码」切到**关**——之后局域网扫码直连、无需密码（仅同一局域网设备可访问；**公网始终要密码**，不受影响）。
+> The LAN PIN is **on by default** (security-first). If you're the only user and find typing it every time annoying, flip "LAN access PIN" to **Off** in the LAN block — LAN scans then connect directly with no PIN (LAN-only devices; the **public tunnel always requires a PIN**, unaffected).
 >
-> 手机登录一次后**长期免输**：只要电脑上的 dsh web 不重启，再次打开手机不用再输入（**dsh web 重启/更新后需重新输入一次**）。
+> After logging in once, the phone **won't ask again**: as long as the computer's dsh web keeps running, reopening the phone needs no PIN (**a dsh web restart/update asks for it once more**).
 >
-> 高级选项：自动识别在 Tailscale/VPN 等场景下可能选不到可达地址。可在「局域网地址」下拉框手动选择已检测到的 IP；一般不需要修改。
+> Advanced option: auto-detection may not pick a reachable address for Tailscale/VPN setups. You can select a detected IP from the "LAN address" dropdown; normally no change is needed.
 
-### 公网（人在外面）
+### Public (from anywhere)
 
-同一页点「**开启公网访问**」→ **每次都会先弹出安全免责声明**，勾选「我已知情」后才能开启（公司/涉密网络请先确认合规）→ 等隧道建立（首次会下载 cloudflared，macOS/Linux 走清华镜像秒下）→ 手机扫「🌐 公网」二维码 → 打开链接**输入访问密码**（密码显示在设置页公网区块，默认是**每次开启公网变新的 8 位随机密码**，也可点「自定义」设成 8–64 位固定密码——英文字母大小写或数字，自定义后不再换新）→ 人在外面（4G/公司网）也能访问。
+On the same page click "**Enable anywhere**" → **a security disclaimer pops up every time — check "I understand and agree" to proceed** (on a corporate/classified network, confirm compliance first) → wait for the tunnel (first run downloads cloudflared; macOS/Linux use the Tsinghua mirror, seconds) → scan the "🌐 Public" QR code → the phone opens the link and **enters the access PIN** (shown in the settings page's public section; the default is an **8-digit random PIN rotated on every tunnel start**, or use **Customize** for a fixed 8–64-character alphanumeric PIN that is never rotated) → works from outside (4G / office network).
 
-> 更新到新版本：`dsh plugin --profile web update dsh-pocket-frog --latest -w`（跨大版本时 `--latest` 是必须的，`^0.x` 范围不会自动升到 1.x）。
+> **Upgrading to the latest source**: source installs ignore semver ranges, so just run the install command again (pnpm re-resolves the newest commit and replaces the local copy):
+>
+> ```sh
+> dsh plugin --profile web add github:zengqingsong/dsh-pocket-frog -w
+> ```
+>
+> Then restart `dsh web`. The in-page "Update" button does the same thing (`pnpm update` under the hood), but with a source install prefer the command above — it's more reliable.
 
-### 公网固定域名（命名隧道，可选）
+### Fixed public hostname (named tunnel, optional)
 
-默认「快速隧道」的公网地址每次重启都会变（前缀随机）。想要**固定公网地址**，可用 Cloudflare **命名隧道**（需要 Cloudflare 账号 + 自己的域名）：
+The default "quick tunnel" gets a new random URL on every restart. For a **fixed public address**, use a Cloudflare **named tunnel** (requires a Cloudflare account + your own domain):
 
-1. 在 [Cloudflare Zero Trust](https://one.dash.cloudflare.com/) → **Networks → Tunnels** 创建一条 Tunnel，复制 **Tunnel Token**
-2. 在该 Tunnel 的 **Public Hostname** 里把你的域名（如 `pocket.example.com`）的 Service 指向 `http://127.0.0.1:3081`
-3. 回到设置页公网区块：模式切到「**命名隧道**」，粘贴 Tunnel Token、填写固定域名，保存
-4. 点「开启公网访问」→ 公网地址固定为你的域名，**重启不再变化**
+1. In [Cloudflare Zero Trust](https://one.dash.cloudflare.com/) → **Networks → Tunnels**, create a Tunnel and copy the **Tunnel Token**
+2. In that Tunnel's **Public Hostname**, point your domain (e.g. `pocket.example.com`) to `http://127.0.0.1:3081`
+3. Back in the settings page's public section: switch the mode to "**Named tunnel**", paste the Tunnel Token, enter the fixed hostname, and save
+4. Click "Enable anywhere" → the public address is now your own hostname and **survives restarts**
 
-注意：命名隧道模式下公网密码**不自动轮换**（地址固定，重启后密码不变），建议配合「自定义密码」主动管理；Tunnel Token 只存本机（`$DSH_HOME/dsh-pocket-frog/settings.json`，仅本机可读），设置页不回显。
+Note: in named-tunnel mode the public PIN is **not auto-rotated** (the address is fixed, so the PIN stays the same across restarts) — manage it proactively with a custom PIN. The Tunnel Token is stored locally only (`$DSH_HOME/dsh-pocket-frog/settings.json`, readable by your user only) and is never echoed back in the UI.
 
-## ⚠️ 安全（必读）
+## Security (read first)
 
-- **DSH 能执行你电脑上的代码**。**局域网**二维码/URL 配上独立 **8 位密码**才是钥匙（密码**默认开启**，可关——关闭后局域网扫码直连，仅同一网络设备可访问），**请勿把局域网二维码、URL 或密码发给别人**
-- **开启公网访问前必须阅读并勾选免责声明**（每次开启都会弹框；服务端强制校验，无法绕过）：公网 = 把能执行代码的 DSH 暴露到互联网，请使用强密码、用完即关、涉密网络勿用
-- **公网**默认有 **8 位随机密码**保护：链接随机分配、默认每次开启换新密码、旧链接立即作废——泄露了也进不来，改密码/重开即可作废；**自定义密码可设为 8–64 位英文字母或数字，且不再自动换新**
-- 手机登录状态与电脑上的 dsh web 进程绑定：**电脑 dsh web 一直开着就不用重复输入；重启/更新后需重新输入一次**
-- **登录限速**（防暴力破解）：同一 IP 连续输错 **5 次**锁定 **60 秒**；全局失败超阈值时短暂全锁（防换 IP 分布式扫描）；输对密码后计数清零
-- 公网 URL 由 cloudflared 随机分配，**每次重启会变化**（旧链接自动失效，相当于天然轮换）；**命名隧道固定域名**模式下地址不变、密码不自动轮换，请配合自定义密码管理
-- **公网判定是 fail closed**（issue #66）：除本机（loopback）和局域网私网地址外，**一切陌生域名（包括你自建隧道/反向代理指向本机端口的固定域名）一律按公网处理、强制公网密码**——不存在「换域名绕过密码」的口子
-- 局域网模式不暴露公网，只有同一网络内的设备能访问
-- 适合个人自用；公网密码存本机 `$DSH_HOME/dsh-pocket-frog/token`（默认每次开启公网自动换新，**自定义后不换**），局域网密码存 `$DSH_HOME/dsh-pocket-frog/token-lan`（设置页手动刷新），开关/自定义标记存 `$DSH_HOME/dsh-pocket-frog/settings.json`
-- **CLI 模式（命令行直跑 `dsh-pocket-frog`）也有密码**（issue #90 修复前这条路是无认证的）：默认随机生成 8 位密码，打印在终端、并已内嵌进二维码（**扫码体验不变**），手动敲地址时需要填写，本机访问免密。`--pin <值>` 或 `DSH_POCKET_FROG_PIN=<值>` 自定义（至少 6 位）；`--no-auth` 可关闭，**不推荐**——那等于把能执行代码的 DSH 裸暴露给任何能连上该端口的人
+- **DSH can execute code on your computer.** **LAN** QR/URL plus its own **8-character PIN** is the key (PIN **on by default**, switchable off — then LAN scans connect directly, same-network devices only) — **never share the LAN QR, URL or PIN**.
+- **Read and accept the security disclaimer before enabling public access** (the dialog shows on every enable; the server enforces it, so it can't be bypassed): public = exposing a code-executing DSH to the internet — use a strong PIN, turn it off when done, never on classified networks.
+- **Public** access uses an **8-digit random PIN** by default: the link is random, the PIN rotates on every tunnel start, and old links die instantly — even a leaked link can't get in. **A custom PIN may contain 8–64 letters and digits and is never auto-rotated**.
+- Phone login state is tied to the computer's dsh web process: **no re-entry while dsh web stays up; one re-entry after a restart/update**.
+- **Login rate limiting** (anti brute-force): **5** consecutive wrong PINs from the same IP lock it for **60s**; a global failure threshold briefly locks everyone (blocks distributed IP-rotation scans); a successful login resets the counter.
+- The public URL is randomly assigned by cloudflared and **changes on every restart** (old links die automatically — a natural key rotation); in **named-tunnel fixed-hostname** mode the address stays and the PIN is not auto-rotated — manage it with a custom PIN.
+- **Public detection is fail-closed** (issue #66): everything except loopback and private LAN addresses is treated as **public and PIN-gated** — including any self-hosted tunnel / reverse proxy pointing at the local port with its own hostname. There is no "change the domain to bypass the PIN" hole.
+- LAN mode exposes nothing publicly; only devices on the same network can reach it.
+- Built for personal use; the public PIN lives in `$DSH_HOME/dsh-pocket-frog/token` (re-rolled per tunnel start unless customized), the LAN PIN in `$DSH_HOME/dsh-pocket-frog/token-lan` (refreshed manually in Settings), and switches/custom flags in `$DSH_HOME/dsh-pocket-frog/settings.json`.
 
-## 💻 DSH Desktop（桌面版）
+## DSH Desktop
 
-- 桌面版里 dsh-pocket-frog 的**扫码同屏**正常可用；**更新/重启由桌面版管理**（插件内这两项自动停用）
-- ⚠️ 桌面端 **advanced 模式**暂不支持手机访问（该模式禁用网页布局、手机拿不到 layout 服务，会白屏）——请切回 **compatibility** 模式后重启；advanced 模式下手机打开会看到明确的提示层
+- In the desktop app, **QR screen-mirroring works**; **update/restart are managed by the desktop app** (auto-disabled here).
+- ⚠️ The desktop **advanced mode** doesn't support phone access yet (it disables the web layout; the phone gets no layout service → blank screen). Switch back to **compatibility** mode and restart; phones opening an advanced-mode page will see a clear notice overlay.
 
-## 🩹 常见问题（别踩的坑）
+## Troubleshooting
 
-| 现象                                        | 原因与解决                                                                                                                                                                                                                                                                                                                                              |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `dsh: command not found` / 提示 DSH 未定义  | dsh CLI 没装：`npm install -g @deepseek-ai/dsh`，或命令前加 `npx @deepseek-ai/dsh`                                                                                                                                                                                                                                                                      |
-| `ERR_PNPM_ADDING_TO_ROOT`                   | pnpm 9 对 workspace 根的限制：安装/更新命令**末尾加 `-w`**（`--workspace-root`）                                                                                                                                                                                                                                                                        |
-| 装完/更新了但界面没变化                     | **必须重启 `dsh web`** 才生效；运行中的进程仍加载旧代码                                                                                                                                                                                                                                                                                                 |
-| `listen EADDRINUSE ... :3081`               | 旧 dsh-pocket-frog 进程还占着端口：macOS/Linux `lsof -ti :3081 \| xargs kill -9`；Windows `netstat -ano \| findstr :3081`（找 LISTENING 的 PID）→ `taskkill /PID <PID> /F`，后重试                                                                                                                                                                           |
-| 想换端口（issue #70）                       | 插件模式：在 `$DSH_HOME/dsh-pocket-frog/settings.json` 写 `"proxyPort": 3082` 后重启 `dsh web`。CLI 模式：`dsh-pocket-frog --port 3082`。端口被占会报 `EADDRINUSE`，杀掉旧进程或换一个端口                                                                                                                                                                        |
-| 想给访客一个临时密码                        | 暂不支持：issue #69 的「临时访问 PIN」功能已在 2.6.x 移除（撤销时会崩）。现在分享访问：把主密码或 `?token=<主密码>` 链接发给对方，用完在设置页点「刷新」换掉即可                                                                                                                                                                                        |
-| Linux 服务器装不上 cloudflared（issue #45） | 远程 Linux 国内/企业网下所有 CDN 源（GitHub/ghproxy/gh.ddlc/gh-proxy）都连不上时：在服务器上手动装 `cloudflared`（如 `apt install cloudflared`、`dnf install cloudflared`、或下载 tgz 解压到任意目录），然后在 `$DSH_HOME/dsh-pocket-frog/settings.json` 加 `"cloudflaredPath": "/path/to/cloudflared"`，重启 `dsh web` 后插件直接调用它，**不再走自动下载** |
-| 版本停在 0.x 升不上去                       | `^0.x` 范围不允许升到 1.x：更新用 `--latest`（`dsh plugin --profile web update dsh-pocket-frog --latest -w`）                                                                                                                                                                                                                                                |
-| 公网 `error 1033`                           | 见下方「公网隧道常见问题」——多半是本机代理/VPN（Clash 等 TUN 模式）掐断了隧道                                                                                                                                                                                                                                                                           |
-| 点「重启 dsh web」后页面提示进程在后台运行  | 自重启的新进程是 detached 后台进程（不挂终端），是页内更新的标准做法；停止它：macOS/Linux `lsof -ti :3080 \| xargs kill -9`；Windows `netstat -ano \| findstr :3080` → `taskkill /PID <PID> /F`（日志在 `$DSH_HOME` 下 `dsh-pocket-frog-restart-*.log`）                                                                                                     |
+| Symptom                                                                         | Cause & fix                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dsh: command not found` / "DSH is not defined"                                 | dsh CLI missing: `npm install -g @deepseek-ai/dsh`, or prefix commands with `npx @deepseek-ai/dsh`                                                                                                                                                                                                                                                                                                                               |
+| `ERR_PNPM_ADDING_TO_ROOT`                                                       | pnpm 9 workspace-root restriction: append `-w` (`--workspace-root`) to install/update commands                                                                                                                                                                                                                                                                                                                                   |
+| Nothing changed after install/update                                            | **You must restart `dsh web`**; the running process still loads the old code                                                                                                                                                                                                                                                                                                                                                     |
+| `listen EADDRINUSE ... :3081`                                                   | A stale dsh-pocket-frog process holds the port: macOS/Linux `lsof -ti :3081 \| xargs kill -9`; Windows `netstat -ano \| findstr :3081` (find the LISTENING PID) → `taskkill /PID <PID> /F`, then retry                                                                                                                                                                                                                                |
+| Want a different port (issue #70)                                               | Plugin mode: write `"proxyPort": 3082` into `$DSH_HOME/dsh-pocket-frog/settings.json` and restart `dsh web`. CLI mode: `dsh-pocket-frog --port 3082`. If the port is taken you'll get `EADDRINUSE` — kill the old process or pick another one                                                                                                                                                                                              |
+| Issue a temporary PIN to a guest                                                | Not available: the temporary access PIN feature (issue #69) was removed in 2.6.x (it crashed on revoke). To share access, send the main PIN or a `?token=<main PIN>` link, then hit "Refresh" in Settings once the guest is done                                                                                                                                                                                                 |
+| cloudflared install fails on a remote Linux server (issue #45)                  | If all CDN sources (GitHub / ghproxy / gh.ddlc / gh-proxy) are unreachable on a remote Linux host, install `cloudflared` yourself (e.g. `apt install cloudflared`, `dnf install cloudflared`, or download the tgz and unpack it), then add `"cloudflaredPath": "/path/to/cloudflared"` into `$DSH_HOME/dsh-pocket-frog/settings.json` and restart `dsh web`. The plugin will then use that binary directly and skip the auto-download |
+| Install fails / `npm view dsh-pocket-frog` returns 404                          | The new name is **not on npm yet**: install from the repository — `dsh plugin --profile web add github:zengqingsong/dsh-pocket-frog -w` (**do not use the package name**)                                                                                                                                                                                                                                                          |
+| The marketplace only shows `dsh-pocket`                                         | That is the **old name** — the entry points at the upstream repository and installs the pre-rename version. The new `dsh-pocket-frog` **is not listed yet**: the marketplace (dsh-plugin.org) picks plugins up automatically by scanning GitHub repos that carry the `dsh-plugin` topic, and this repo does not have that topic yet (nor an npm release). Use the source install command above for now, and install from the marketplace once it is released |
+| Upgrading from the old `dsh-pocket` (the rename is a breaking change)            | Since the rename the package name / CLI command / RPC channel / cookie / env vars / state directory all changed (`dsh-pocket` → `dsh-pocket-frog`) and the two are **not interchangeable**: remove the old one first (`dsh plugin --profile web remove dsh-pocket -w`), install the new one from source as above (both can coexist, but each would run its own proxy for no reason), then restart `dsh web`. The old state directory `$DSH_HOME/dsh-pocket/` (PIN, settings, tunnel markers) is **not migrated** — the new `$DSH_HOME/dsh-pocket-frog/` starts fresh |
+| Updating to the latest version                                                  | Source installs ignore semver ranges: run `dsh plugin --profile web add github:zengqingsong/dsh-pocket-frog -w` again to pull the newest commit, then restart `dsh web`                                                                                                                                                                                                                                                            |
+| Public `error 1033`                                                             | See "Public tunnel troubleshooting" below — usually a local proxy/VPN (Clash etc. TUN mode) killing the tunnel                                                                                                                                                                                                                                                                                                                   |
+| After "Restart dsh web", the page says the process is running in the background | The new process from in-page self-restart is a detached background process (not attached to your terminal) — that's the standard way to apply updates in-page; stop it: macOS/Linux `lsof -ti :3080 \| xargs kill -9`; Windows `netstat -ano \| findstr :3080` → `taskkill /PID <PID> /F` (logs under `$DSH_HOME` as `dsh-pocket-frog-restart-*.log`)                                                                                 |
+| Windows: `spawn cloudflared ENOENT` (issue #82)                                 | **Happens on every machine where only the npm build of cloudflared is installed**: npm creates `cloudflared.cmd` plus an extension-less script on Windows, and Node cannot execute `.cmd` without a shell. The plugin used to read that as "already on PATH" — so it both skipped its own binary and was guaranteed to fail (deleting the `bin` cache did not help; it was empty to begin with). Fixed in the latest version: only directly executable `.exe`/`.com` are accepted and the plugin-managed binary is used (downloaded on first run). To get going immediately: `winget install cloudflared` (a real `.exe`), or put `"cloudflaredPath": "C:\\path\\to\\cloudflared.exe"` into `settings.json` and restart `dsh web` |
+| Downloading cloudflared says "all sources failed"                               | Usually they are not all down (issue #82: the four sources shared a single 120s timeout budget, so one stalled source killed the rest). Fixed in the latest version: each source is timed separately, so a slow official source still lets the mirrors through; if everything really is unreachable, use the manual options under "Download fails / stalls on first enable" below                                                                                  |
 
-## ⚠️ 公网隧道常见问题（必读）
+## Public tunnel troubleshooting (read first)
 
-**现象**：点「开启公网访问」后，手机上打开公网地址报 `error 1033`（Tunnel error）。
+**Symptom**: after clicking "Enable anywhere", the public URL shows `error 1033` (Tunnel error) on the phone.
 
-**最常见原因：本机开着代理/VPN（Clash、Surge、v2ray、sing-box 等，尤其 TUN 模式）**。
-这类工具会接管全部流量，并常常把 cloudflared 的隧道边缘连接
-（`*.argotunnel.com`、Cloudflare 边缘 IP）掐断，导致隧道注册成功但数据面连不上。
+**Most common cause: a local proxy/VPN (Clash, Surge, v2ray, sing-box, etc., especially in TUN mode).**
+Such tools take over all traffic and often cut cloudflared's tunnel-edge connections
+(`*.argotunnel.com`, Cloudflare edge IPs), so the tunnel registers but the data plane never connects.
 
-**解决（从轻到重，按顺序试）**：
+**Fix (try in order, lightest first)**:
 
-1. 先**只关闭代理的 TUN 模式**，不用退出代理软件——多数情况这一步就够：
-   - Clash：设置里关掉「**TUN 模式**」开关（或右键菜单栏图标 → 取消勾选 TUN 模式）
-   - Surge：关「**增强模式**」；v2ray/sing-box：关「**虚拟网卡/路由接管**」
-   - 然后回设置页重新点「开启公网访问」
-2. 仍不行就**彻底退出代理软件**（不只是关界面：Clash 要右键菜单栏图标 → 退出；若装有
-   后台服务还要在服务管理器里停掉，`ps aux | grep clash` 确认进程消失），再重试
-3. 给代理加**直连规则**，放行隧道域名与 Cloudflare 边缘（Clash 规则示例）：
+1. First **just turn off the proxy's TUN mode** — no need to quit the proxy; this is enough in most cases:
+   - Clash: turn off the "**TUN mode**" toggle in Settings (or right-click the menu-bar icon → uncheck TUN mode)
+   - Surge: turn off "**Enhanced mode**"; v2ray/sing-box: turn off "**virtual NIC / route takeover**"
+   - Then go back to the settings page and click "Enable anywhere" again
+2. If that's not enough, temporarily **fully quit the proxy** (not just close the window: quit Clash from the menu-bar icon; if a
+   background service is installed, stop it in the service manager and confirm with `ps aux | grep clash`), then retry.
+3. Add **DIRECT rules** to the proxy for the tunnel domains and Cloudflare edge (Clash example):
    ```yaml
    - DOMAIN-SUFFIX,argotunnel.com,DIRECT
    - DOMAIN-SUFFIX,trycloudflare.com,DIRECT
    - IP-CIDR,198.41.192.0/24,DIRECT,no-resolve
    ```
-4. 网络实在不通时，改用**局域网模式**：手机开热点 → 电脑连手机热点 → 扫局域网码，
-   效果完全一样（人在外面也能用）
+4. If the network really can't reach the tunnel, use **LAN mode**: turn on the phone hotspot → connect the computer to it → scan the LAN QR. Same experience, from anywhere.
 
-**其他可能**：企业防火墙/校园网拦截出站；此时请让 IT 放行或改用热点。
+**Other causes**: corporate firewalls / campus networks blocking outbound — ask IT to allow it, or use a hotspot.
 
-**首次开启时「下载 cloudflared」失败/卡住**：
+**First run: "Downloading cloudflared" fails or hangs**:
 
-- **macOS/Linux**：优先走**清华镜像**（实测 ~3MB/s，几秒下完）；失败自动回退官方 GitHub + 加速源。
-- **Windows**：无清华镜像（Homebrew 不支持 Windows），走官方直连下载（约 50MB，**单线程会慢，属正常**，耐心等几分钟；也可挂代理加速）。
-- 全部失败时设置页会给出提示。备选方案（任选其一）：
+- **macOS/Linux**: the plugin first downloads from the **Tsinghua mirror** (measured ~3MB/s, done in seconds); falls back to official GitHub + acceleration mirrors if it fails.
+- **Windows**: no Tsinghua mirror (Homebrew doesn't support Windows) — downloads the ~50MB exe from GitHub directly; **single-threaded, so it's slower — that's expected**, wait a few minutes, or use a proxy.
+- If all sources fail, the settings page shows a hint. Alternatives (any one):
 
-1. 手动装好命令行 cloudflared 后重试（装好后 dsh-pocket-frog 直接用 PATH 里的，不再下载）：
-   - macOS：`brew install cloudflared`；Linux：`sudo apt install cloudflared` 或官网下载
-   - Windows：`winget install cloudflared` 或官网下载
-   - 任何平台：`npm i -g cloudflared`
-2. 挂代理（系统代理/Clash 等）后重新点「开启公网访问」
-3. 手动下载二进制放到 `$DSH_HOME/dsh-pocket-frog/bin/` 目录（`$DSH_HOME` 一般是 `~/.dsh`，Windows 是 `%USERPROFILE%\.dsh`；文件名用 `cloudflared`（Windows 加 `.exe`）或发布资产名均可，插件都认）
+1. Install the `cloudflared` command and retry (the plugin then uses the PATH binary, no download):
+   - macOS: `brew install cloudflared`; Linux: `sudo apt install cloudflared` or from the official site
+   - Windows: `winget install cloudflared` or from the official site
+   - **Do not use `npm i -g cloudflared` on Windows**: npm only creates a `cloudflared.cmd` wrapper, which Node cannot execute directly (this is exactly what caused `spawn cloudflared ENOENT`, issue #82). It will be skipped and the plugin-managed download is used instead
+2. Enable a proxy (system proxy / Clash etc.) and click "Enable anywhere" again
+3. Manually download the binary into `$DSH_HOME/dsh-pocket-frog/bin/` (`$DSH_HOME` is usually `~/.dsh`, on Windows `%USERPROFILE%\.dsh`; name it `cloudflared` (add `.exe` on Windows) **or** the release asset name — both are recognized)
 
-## 🗂 架构（单包）
+## Architecture (single package)
 
-| 文件                 | 说明                                                                                                                                                                               |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `lib/index.js`       | 插件入口：自动起代理 + 注册 RPC + 访问密码管理（公网 8 位每次开启变新；局域网独立 8 位可手动刷新/开关）+ 局域网访问总开关 + 桌面端环境适配                                         |
-| `lib/settings.mjs`   | 设置持久化：局域网访问总开关（默认开启）+ 局域网密码开关（默认开启）存 `$DSH_HOME/dsh-pocket-frog/settings.json`                                                                        |
-| `lib/service.mjs`    | 服务：代理生命周期（端口自适应）、公网隧道（自动恢复）、状态快照（含二维码）                                                                                                       |
-| `lib/proxy.mjs`      | 改头反向代理：Host/Origin → loopback，HTTP + WebSocket 透传 + polyfill 注入 + gzip/brotli 压缩 + 按 Host 区分的访问令牌认证（公网必验；局域网按开关）+ 局域网关闭时拦截局域网 Host |
-| `lib/tunnel.mjs`     | cloudflared：多镜像源下载（清华优先）/自适应多线程/启动/解析公网 URL（HTTP/2）                                                                                                     |
-| `lib/web-rpc.js`     | loopback RPC：`status` / `tunnel.start` / `tunnel.stop` / `lan.setEnabled` / `version` / `update` / `restart`                                                                      |
-| `client/`            | 设置页「手机访问」+ 移动端适配（dsh-web-mobile 移植）                                                                                                                              |
-| `bin/dsh-pocket-frog.mjs` | CLI：局域网/公网模式，打印 URL + 二维码                                                                                                                                            |
+| File                 | Purpose                                                                                                                                                                                                                      |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/index.js`       | Plugin entry: auto-start proxy + register RPC + access-PIN management (public: 8 digits rotated per tunnel start; LAN: separate 8 digits, manually refreshable / switchable) + LAN access switch + DSH Desktop detection     |
+| `lib/settings.mjs`   | Settings persistence: LAN access switch (on by default) + LAN-PIN switch (on by default) stored in `$DSH_HOME/dsh-pocket-frog/settings.json`                                                                                      |
+| `lib/service.mjs`    | Service: proxy lifecycle (port auto-fallback), public tunnel (auto-restore), status snapshot (with QR data URLs)                                                                                                             |
+| `lib/proxy.mjs`      | Header-rewriting reverse proxy: Host/Origin → loopback, HTTP + WebSocket passthrough + polyfill injection + gzip/brotli compression + per-host token auth (public always; LAN per switch) + blocks LAN Hosts when LAN is off |
+| `lib/tunnel.mjs`     | cloudflared: multi-mirror download (Tsinghua first) / adaptive parallel / start / parse public URL (HTTP/2)                                                                                                                  |
+| `lib/web-rpc.js`     | Loopback RPC: `status` / `tunnel.start` / `tunnel.stop` / `lan.setEnabled` / `version` / `update` / `restart`                                                                                                                |
+| `client/`            | "Phone access" settings tab + mobile adaptation (dsh-web-mobile port)                                                                                                                                                        |
+| `bin/dsh-pocket-frog.mjs` | CLI: LAN/public modes, prints URL + QR                                                                                                                                                                                       |
 
-## 🛠 开发
+## Development
 
 ```sh
+git clone https://github.com/zengqingsong/dsh-pocket-frog && cd dsh-pocket-frog
 npm install
-node client/build.mjs   # 改 client/ 后重新打包
-npm test                # 代理 / 认证 / 压缩 / 隧道 / 服务 / RPC / 设置（109 测试）
+node client/build.mjs   # rebuild after editing client/
+npm test                # proxy / auth / compression / tunnel / service / RPC / settings (180 tests)
 ```
 
-**改完想在本机先试？** 不用发版：把插件换成指向本地仓库的软链，重启 dsh web 就是本地代码。完整步骤（含怎么换回 npm 官方版本）见 [LOCAL-DEV.md](./LOCAL-DEV.md)。
+**Want to try your changes locally without publishing?** Point the installed plugin at your local checkout with a symlink and restart dsh web. Full steps (including switching back to the GitHub source release) are in [LOCAL-DEV.md](./LOCAL-DEV.md).
 
-## 🤝 致谢
+## Credits
 
-- 移动端适配移植自 [mexiaosqwq/dsh-web-mobile](https://github.com/mexiaosqwq/dsh-web-mobile)（MIT）
-- 公网隧道基于 [cloudflared](https://github.com/cloudflare/cloudflared)
+Written and maintained by [曾青松 (Zeng Qingsong)](https://github.com/zengqingsong).
 
-## 📄 License
+It began as a fork of [shaobeichen/dsh-pocket](https://github.com/shaobeichen/dsh-pocket) (GPL-2.0), whose upstream license notice is preserved unchanged in [LICENSE](./LICENSE). Since then this fork has renamed everything (`dsh-pocket` → `dsh-pocket-frog`: package name, CLI command, RPC channel, cookie, environment variables and state directory), added its own tests and docs, and fixed a batch of public-tunnel download traps — each download source timed separately, and only a directly executable `cloudflared` accepted (see "Troubleshooting").
 
-[GPL-2.0](LICENSE) —— 自由软件许可：可自由使用、修改、分发，但**修改版必须同样以 GPL 开源**并保留版权声明；商用同样适用。
+Bundled third-party work, used under its own license:
 
-> 说明：移动端适配部分移植自 [dsh-web-mobile](https://github.com/mexiaosqwq/dsh-web-mobile)（MIT 许可，兼容 GPL），其版权声明保留在 `client/mobile/LICENSE.dsh-web-mobile`。
+- Mobile adaptation ported from [mexiaosqwq/dsh-web-mobile](https://github.com/mexiaosqwq/dsh-web-mobile) (MIT, GPL-compatible), its copyright notice kept in `client/mobile/LICENSE.dsh-web-mobile`
+- Public tunnel powered by [cloudflared](https://github.com/cloudflare/cloudflared)
 
----
+## License
 
-**有问题？欢迎反馈**：遇到 Bug、有想法、想提需求，请到 [GitHub Issues](https://github.com/shaobeichen/dsh-pocket-frog/issues) 告诉我们 🙏
+[GPL-2.0](./LICENSE), with upstream dsh-pocket's license text kept unchanged.
+
+Copyright (c) 2026 shaobeichen — dsh-pocket
+Copyright (c) 2026 曾青松 (Zeng Qingsong) — dsh-pocket-frog, a fork of dsh-pocket
+
+<p align="left">
+  <img src="docs/logo/gzpu.jpg" alt="Guangzhou Polytechnic University" width="128" height="128" />
+</p>
+
+Developed and maintained at **Guangzhou Polytechnic University** ([gzpyp.edu.cn](https://www.gzpyp.edu.cn/)) by [曾青松 (Zeng Qingsong)](https://github.com/zengqingsong).
